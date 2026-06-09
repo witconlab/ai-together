@@ -43,6 +43,19 @@ type SlideDeckRequest = {
   style: string
 }
 
+type GenerateSlideImageRequest = {
+  slideNumber: number
+  title: string
+  imagePrompt: string
+  style: string
+}
+
+export type GenerateSlideImageResponse = {
+  slideNumber: number
+  title: string
+  imageBase64: string
+}
+
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${WORKER_URL}${path}`, {
     method: 'POST',
@@ -73,4 +86,6 @@ export const api = {
     post('/api/generate-presentation', req),
   generateSlideDeck: (req: SlideDeckRequest) =>
     post('/api/generate-slide-deck', req),
+  generateSlideImage: (req: GenerateSlideImageRequest) =>
+    post<GenerateSlideImageResponse>('/api/generate-slide-image', req),
 }
