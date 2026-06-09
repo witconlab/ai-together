@@ -19,11 +19,9 @@ export default function Home() {
         </div>
         <h1 className="text-white text-3xl font-black mt-4 mb-2 leading-tight">
           AI Together<br />
-          <span className="text-teal-400">공론장 운영센터</span>
+          <span className="text-teal-400">기술을 더하고,</span><br />
+          <span className="text-white">숙의를 나누다.</span>
         </h1>
-        <p className="text-white/70 text-base mb-2">
-          기술을 더하고, 숙의를 나누며, 마을을 잇다
-        </p>
         <p className="text-white/50 text-sm max-w-xs mx-auto">
           AI는 정답을 드리지 않습니다.<br />
           주민 여러분의 깊은 토론을 돕습니다.
