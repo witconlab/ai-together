@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { agendas } from '../data/agendas'
 
 const commonQuestions = [
-  '이 의제를 70대 주민도 이해할 수 있게 쉽게 설명해 주세요.',
+  '이 정책제안을 70대 주민도 이해할 수 있게 쉽게 설명해 주세요.',
   '이 문제는 우리 동네에서 왜 중요한가요?',
   '다른 지역에서는 어떻게 해결했나요?',
   '실행하려면 어떤 준비가 필요할까요?',
@@ -43,7 +43,7 @@ export default function QuestionGuide() {
         ))}
       </div>
 
-      <h2 className="text-lg font-bold text-navy-700 mb-3">의제별 챗봇 열기</h2>
+      <h2 className="text-lg font-bold text-navy-700 mb-3">정책별 챗봇 열기</h2>
       <div className="flex flex-col gap-2">
         {agendas.map((a) => (
           <Link

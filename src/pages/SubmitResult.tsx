@@ -22,15 +22,15 @@ export default function SubmitResult() {
         </p>
       </div>
 
-      {/* 의제 선택 */}
+      {/* 정책제안 선택 */}
       <div className="mb-4">
-        <label className="font-bold text-navy-700 block mb-2">의제 선택</label>
+        <label className="font-bold text-navy-700 block mb-2">정책제안 선택</label>
         <select
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
           className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base focus:outline-none focus:border-navy-400"
         >
-          <option value="">의제를 선택하세요</option>
+          <option value="">정책제안을 선택하세요</option>
           {agendas.map((a) => (
             <option key={a.agendaId} value={a.agendaId}>{a.title}</option>
           ))}
@@ -72,7 +72,7 @@ export default function SubmitResult() {
         </a>
       ) : (
         <button disabled className="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-xl text-xl cursor-not-allowed">
-          의제를 먼저 선택하세요
+          정책제안을 먼저 선택하세요
         </button>
       )}
 

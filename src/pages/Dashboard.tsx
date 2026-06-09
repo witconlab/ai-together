@@ -13,7 +13,7 @@ const STAGES = [
   { num: 7, label: '최종 발표 준비 완료', duration: '10분', icon: '🎤' },
 ]
 
-// 의제별 가상 제출 현황 (실제는 Google Sheets 연동)
+// 정책별 가상 제출 현황 (실제는 Google Sheets 연동)
 type AgendaStatus = {
   agendaId: string
   submitted: number
@@ -135,7 +135,7 @@ export default function Dashboard() {
         {/* 📊 현황 탭 */}
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-4">
-            <h2 className="font-bold text-navy-700 text-lg">의제별 제출 현황</h2>
+            <h2 className="font-bold text-navy-700 text-lg">정책별 제출 현황</h2>
             {agendaStatus.map((status) => {
               const agenda = agendas.find((a) => a.agendaId === status.agendaId)
               const pct = Math.round((status.submitted / status.total) * 100)

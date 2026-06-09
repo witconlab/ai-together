@@ -143,13 +143,13 @@ export default function SlideDeck() {
 
       <div className="flex flex-col gap-4">
         <div>
-          <label className="font-bold text-navy-700 block mb-2">의제 선택</label>
+          <label className="font-bold text-navy-700 block mb-2">정책제안 선택</label>
           <select
             value={agendaId}
             onChange={(e) => setAgendaId(e.target.value)}
             className="w-full border border-gray-200 rounded-xl px-3 py-3 text-base focus:outline-none focus:border-navy-400"
           >
-            <option value="">의제를 선택하세요</option>
+            <option value="">정책제안을 선택하세요</option>
             {agendas.map((a) => (
               <option key={a.agendaId} value={a.agendaId}>{a.title}</option>
             ))}

@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 
 const steps = [
-  { num: '1', label: '의제 학습', desc: '테이블 의제를 확인하고\nAI에게 질문하세요' },
-  { num: '2', label: '숙의 토론', desc: '질문 가이드를 참고해\n테이블 토론을 진행하세요' },
-  { num: '3', label: '결과 제출', desc: '토론 결과를\nGoogle Forms로 제출하세요' },
-  { num: '4', label: '발표 준비', desc: '운영진이 결과를 정리해\n주민총회에서 발표합니다' },
+  { num: '1', label: '정책 공유', desc: '테이블 정책제안을 확인하고\nAI에게 질문하세요' },
+  { num: '2', label: 'AI 정책 학습', desc: '정책 매니저 챗봇으로\n깊이 이해하세요' },
+  { num: '3', label: '숙의 토론', desc: '질문 가이드를 참고해\n테이블 토론을 진행하세요' },
+  { num: '4', label: '의견 제출', desc: '토론 결과를\nGoogle Forms로 제출하세요' },
 ]
 
 export default function Home() {
@@ -14,7 +14,7 @@ export default function Home() {
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-12 text-center">
         <div className="mb-2">
           <span className="bg-teal-400/20 text-teal-300 text-sm font-medium px-4 py-1 rounded-full">
-            100분 공론장
+            마을자치 정책제안 공론장
           </span>
         </div>
         <h1 className="text-white text-3xl font-black mt-4 mb-2 leading-tight">
@@ -38,10 +38,10 @@ export default function Home() {
             🤖 정책 매니저 챗봇
           </Link>
           <Link
-            to="/agendas"
+            to="/submit"
             className="btn-secondary text-center block py-4 rounded-2xl"
           >
-            📝 결과 제출하기
+            📝 정책 의견 제출하기
           </Link>
           <Link
             to="/discussion-guide"
@@ -65,7 +65,7 @@ export default function Home() {
       {/* 오늘의 진행 흐름 */}
       <div className="bg-white/5 backdrop-blur px-5 py-8">
         <h2 className="text-white/80 text-lg font-bold text-center mb-5">
-          오늘의 100분 진행 순서
+          오늘의 공론장 진행 순서
         </h2>
         <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
           {steps.map((s) => (

@@ -21,10 +21,10 @@ export default function ChatPage() {
   if (!agenda) {
     return (
       <div className="px-4 py-12 text-center text-gray-500">
-        의제를 찾을 수 없습니다.
+        정책제안을 찾을 수 없습니다.
         <br />
         <Link to="/agendas" className="text-navy-600 underline mt-4 inline-block">
-          의제 목록으로 돌아가기
+          목록으로 돌아가기
         </Link>
       </div>
     )
@@ -64,13 +64,18 @@ export default function ChatPage() {
       <div className="bg-amber-50 border-b border-amber-100 px-4 py-3">
         <p className="text-amber-800 text-sm leading-relaxed">
           <span className="font-bold">이 챗봇은 정답을 알려주는 도구가 아닙니다.</span><br />
-          자료를 바탕으로 쟁점을 정리하고 깊은 토론을 돕는 <span className="font-bold">숙의 보조자</span>입니다.
+          자료를 바탕으로 쟁점을 정리하고 깊은 토론을 돕는 <span className="font-bold">정책 매니저</span>입니다.
         </p>
       </div>
 
       <div className="bg-white border-b px-4 py-2">
-        <h1 className="font-bold text-navy-800">{agenda.title}</h1>
-        <p className="text-gray-400 text-xs">AI 숙의 보조 챗봇</p>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+            {agenda.agendaId.replace('policy-', '')}번
+          </span>
+          <h1 className="font-bold text-navy-800 text-sm leading-tight">{agenda.title}</h1>
+        </div>
+        <p className="text-gray-400 text-xs mt-0.5">정책 매니저 챗봇</p>
       </div>
 
       {/* 메시지 영역 */}
@@ -186,7 +191,7 @@ export default function ChatPage() {
           rel="noopener noreferrer"
           className="text-sm font-bold text-teal-600 hover:text-teal-800"
         >
-          결과 제출하기 →
+          정책 의견 제출하기 →
         </a>
       </div>
     </div>
