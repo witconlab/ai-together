@@ -6,7 +6,7 @@ import type { SlideDeckPlan, SlideImagePlan } from '../types'
 const slideCounts = [6, 7, 8]
 const styles = ['공공기관 발표자료', '실사 기반 발표 슬라이드', '따뜻한 지역 공동체 슬라이드']
 
-function SlideCard({ slide, index }: { slide: SlideImagePlan; index: number }) {
+function SlideCard({ slide }: { slide: SlideImagePlan; index?: number }) {
   const [copied, setCopied] = useState(false)
 
   function copyPrompt() {
