@@ -2,6 +2,7 @@ import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { agendas } from '../data/agendas'
 import { api } from '../utils/api'
+import { downloadPolicyPDF } from '../utils/pdf'
 
 const audiences = ['주민총회', '행정기관', '내부 보고', '카드뉴스']
 
@@ -120,17 +121,28 @@ export default function PolicyProposal() {
               <p className="text-teal-900 text-lg font-bold leading-relaxed">{result.presentationSentence}</p>
             </div>
           )}
-          <button
-            onClick={() => {
-              const text = Object.entries(result)
-                .map(([k, v]) => `[${k}]\n${v}`)
-                .join('\n\n')
-              navigator.clipboard.writeText(text).catch(() => {})
-            }}
-            className="btn-secondary"
-          >
-            전체 복사
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                const text = Object.entries(result)
+                  .map(([k, v]) => `[${k}]\n${v}`)
+                  .join('\n\n')
+                navigator.clipboard.writeText(text).catch(() => {})
+              }}
+              className="flex-1 btn-secondary"
+            >
+              전체 복사
+            </button>
+            <button
+              onClick={() => {
+                const agenda = agendas.find((a) => a.agendaId === agendaId)
+                downloadPolicyPDF(result as Record<string, string>, agenda?.title || '')
+              }}
+              className="flex-1 btn-primary"
+            >
+              📥 PDF 다운로드
+            </button>
+          </div>
         </div>
       )}
     </div>

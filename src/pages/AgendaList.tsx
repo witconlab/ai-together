@@ -29,7 +29,7 @@ export default function AgendaList() {
                 to={`/agenda/${agenda.agendaId}`}
                 className="btn-primary text-center block"
               >
-                📚 학습실로 이동
+                🤖 정책 매니저 챗봇
               </Link>
               <Link
                 to={`/chat/${agenda.agendaId}`}

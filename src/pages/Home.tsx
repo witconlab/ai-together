@@ -35,7 +35,7 @@ export default function Home() {
             to="/agendas"
             className="btn-teal text-center block text-xl py-4 rounded-2xl"
           >
-            📋 의제 학습하기
+            🤖 정책 매니저 챗봇
           </Link>
           <Link
             to="/agendas"
