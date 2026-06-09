@@ -6,3 +6,10 @@ worker/.dev.vars
 worker/node_modules
 .wrangler
 worker/.dev.vars.example
+
+# RAG 파일 (PDF/TXT는 git에 올리지 않음, 폴더 구조만 유지)
+rag-files/**/*.pdf
+rag-files/**/*.txt
+rag-files/**/*.md
+rag-files/**/*.docx
+!rag-files/README.md
