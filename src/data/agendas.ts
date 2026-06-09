@@ -12,7 +12,7 @@ export const agendas: Agenda[] = [
     whyImportant: '순환보직제의 행정 공무원이 담당하는 읍·면·동장은 지역 현실에 대한 낮은 이해, 책임있는 중장기 계획의 부재, 주민과의 거리감 등 여러 문제를 노출하고 있습니다. 읍·면·동 단위 (준)지방정부 전환을 위한 행정개혁과 함께 마을 자치의 리더로 활동할 수 있는 주민 추천제 읍·면·동장 선출이 필요합니다.',
     expectedEffect: '주민 대표성 있는 읍면동장 선출로 지역 밀착형 행정 실현, 중장기 계획 수립 역량 강화, 주민자치 활성화, 행정-주민 간 신뢰 회복. ※ 국정과제 52번 주민 삶의 질 향상을 위한 자치분권 역량제고(행안부/2025.8.17)',
     chatbotGuide: '읍면동장 주민 선출제 및 전문직위제 도입과 관련된 제안 배경, 기대효과, 쟁점을 자료 기반으로 안내합니다.',
-    googleFormUrl: 'https://forms.gle/example1',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-01-store',
     referenceUrls: [
       'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
@@ -38,7 +38,7 @@ export const agendas: Agenda[] = [
     whyImportant: '마을자치가 지속가능하게 운영되기 위해서는 안정적인 재정지원 체계가 필요합니다. 현재는 공모사업 중심의 불안정한 재원 구조로 인해 공동체 활동의 연속성이 떨어지고 있습니다. 주민세 환원, 시민참여예산, 고향사랑기부제, 자치계획 실행예산 등을 연계한 재정구조 논의가 필요합니다.',
     expectedEffect: '마을자치 재정 안정화, 주민 주도의 자립형 재정 운영 실현, 공동생산·공동판매 기반의 지역순환경제 모델 구축, 지속가능한 공동체 활동 기반 마련',
     chatbotGuide: '마을공동체 재정 자립 방안, 주민세 환원, 시민참여예산 연계, 공동체기금 운영에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example2',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-02-store',
     referenceUrls: [
       'https://www.mois.go.kr/frt/sub/a06/b03/participateBudget/screen.do',
@@ -64,7 +64,7 @@ export const agendas: Agenda[] = [
     whyImportant: '전남·광주 행정통합에 따라 도시형 마을자치와 농촌형 공동체 구조를 함께 포괄할 수 있는 지속가능한 통합형 마을자치 체계 마련 필요성이 확대되고 있습니다. 도시형·농촌형·도농복합지역의 마을자치 모델 비교·분석을 통해 행정·현장·중간지원조직 간 연계 및 협력방안 마련이 필요합니다.',
     expectedEffect: '통합형 마을자치 정책 체계 구축, 전남·광주 간 균형 있는 예산 배분, 현장 중심의 전문지원관 제도 도입, 상생형 통합 공모사업 체계 실현',
     chatbotGuide: '전남·광주 행정통합과 마을자치 통합체계에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example3',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-03-store',
     referenceUrls: [
       'https://www.gwangju.go.kr',
@@ -90,7 +90,7 @@ export const agendas: Agenda[] = [
     whyImportant: '주민자치회 입법화 흐름에 맞춰 통합 이후 적용 가능한 조례와 운영 기준을 사전에 마련해야 합니다. 읍·면·동 단위 주민자치회가 실질적 대표성을 갖는 자치기구로 기능하려면 제도적 근거가 필요하며, 마을공동체 활성화 기본법 통과에 대비한 빠른 조례 대응도 필요합니다.',
     expectedEffect: '주민자치회 법적 근거 강화, 마을공동체 정책 통합 조례 제도화, 시민 주도 입법 문화 형성, 통합시 출범과 동시에 작동하는 자치 제도 기반 마련',
     chatbotGuide: '통합 조례 마련, 주민자치회 조례, 마을공동체 기본법과 관련된 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example4',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-04-store',
     referenceUrls: [
       'https://www.law.go.kr/lsSc.do?query=%EC%A3%BC%EB%AF%BC%EC%9E%90%EC%B9%98%ED%9A%8C',
@@ -116,7 +116,7 @@ export const agendas: Agenda[] = [
     whyImportant: '공공의 유휴공간뿐만 아니라 현재 운영 중인 마을회관, SOC 및 도시재생 사업으로 구축된 공간 등을 활용하여 주민 삶과 연결된 창의적 공유지대 및 공동체 거점공간 조성이 필요합니다. 문화·경제·돌봄 기능이 결합된 생활밀착형 공간으로의 전환이 요구됩니다.',
     expectedEffect: '주민 소통·협력 공간 확충, 생활밀착형 공동체 거점 마련, 마을실험실을 통한 다양한 자치 실험 가능, 유휴공간의 효율적 활용',
     chatbotGuide: '창의적 공유공간 활용, 마을실험실, 공동체 거점공간 조성에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example5',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-05-store',
     referenceUrls: [
       'https://www.kcuf.kr',
@@ -142,7 +142,7 @@ export const agendas: Agenda[] = [
     whyImportant: '행정통합에 따라 기존 마을공동체, 주민자치, 도시재생 등 중간지원조직의 기능과 역할을 재정비할 필요가 있습니다. 통합형 기관의 가치와 운영목표, 전략에 따른 조직구성(인력)을 새롭게 설계해야 합니다.',
     expectedEffect: '중복·분산된 지원 기능 통합, 현장 접근성 강화, 전문성 있는 통합 지원 제공, 행정-현장-주민 간 연결 강화',
     chatbotGuide: '전남·광주 통합지원기관의 역할, 기능, 조직 구성에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example6',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-06-store',
     referenceUrls: [
       'https://www.k-village.or.kr',
@@ -168,7 +168,7 @@ export const agendas: Agenda[] = [
     whyImportant: '주민자치회 입법화 흐름에 맞춰 광주·전남 통합 이후 적용 가능한 조례와 운영 기준을 사전에 논의해야 합니다. 읍·면·동 단위 주민자치회가 주민 의견을 모으고 실행하는 실질적 대표성을 갖는 자치기구로 기능 강화가 필요합니다.',
     expectedEffect: '주민자치회 역량 단계별 성장 지원, 운영 매뉴얼 표준화, 자치계획 실행 근거 마련, 행정정책·예산·사무지원 기준 확립',
     chatbotGuide: '주민자치회 성장단계별 지원체계, 운영 매뉴얼, 제도화에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example7',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-07-store',
     referenceUrls: [
       'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
@@ -194,7 +194,7 @@ export const agendas: Agenda[] = [
     whyImportant: '주민자치회는 지역마다 운영 수준과 대표성 차이가 크고, 일부는 특정 참여층 중심으로 운영되는 한계가 있습니다. 통합 이후 전남과 광주 간 이해관계가 다양해지므로 주민자치회의 대표성과 민주성을 강화하여 실질적 주민 의사결정 구조 설계가 필요합니다.',
     expectedEffect: '주민자치회 대표성 및 민주성 강화, 지역 특성에 맞는 유형별 자치 모델 개발, 읍·면·동 단위 갈등 조정 역량 강화, 주민자치·마을공동체·사회적경제 연계 강화',
     chatbotGuide: '주민자치회 대표성 강화, 유형별 시범사업, 숙의 방식 공론장에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example8',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-08-store',
     referenceUrls: [
       'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
@@ -220,7 +220,7 @@ export const agendas: Agenda[] = [
     whyImportant: '전남·광주 통합시 마을공동체와 주민자치의 확산과 올바른 방향 모색을 위한 만남·성장·공유의 한마당이 필요합니다. 시민주권정부의 통합시가 전국의 주민자치를 연결하는 학습의 장으로서 전국주민자치박람회 유치가 필요합니다.',
     expectedEffect: '전국 주민자치 네트워크 허브로 도약, 우수 사례 공유와 확산, 마을자치 문화 형성, 전남·광주 통합시 브랜드 강화',
     chatbotGuide: '마을자치 한마당, 전국주민자치박람회 유치, 네트워크 구축에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example9',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-09-store',
     referenceUrls: [
       'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
@@ -246,7 +246,7 @@ export const agendas: Agenda[] = [
     whyImportant: '마을자치 정책은 주민 주도성이 핵심이지만, 현장에서 이를 이해하고 지원할 공무원의 인식 개선과 전문지원관제 도입이 필요합니다. 주민자치·마을공동체 담당 공무원을 위한 시민주권정부 시관학교 신설, 읍면동 공무원 대상 마을자치 실무교육 의무화, 전문지원관제 시범운영이 요구됩니다.',
     expectedEffect: '마을자치 전문 인력 양성, 공무원 인식 개선과 역량 강화, 전문지원관 네트워크 구축, 마을활동가 자격 체계 확립',
     chatbotGuide: 'k시민주권 사관학교, 자격증제, 마을활동가 교육체계에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example10',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-10-store',
     referenceUrls: [
       'https://www.kird.re.kr',
@@ -272,7 +272,7 @@ export const agendas: Agenda[] = [
     whyImportant: '도시와 농촌이 연계·상생하는 생활권 기반 공동체 모델 구축과 인구감소 및 지역소멸 대응을 위한 생활권 단위 협력체계 마련이 필요합니다. 마을교육공동체 활성화와 생활 밀착형 돌봄 체계 구축으로 초고령사회에 대응해야 합니다.',
     expectedEffect: '도농 교류 활성화, 지역소멸 대응 협력체계 구축, 마을교육공동체 모델 개발, 통합돌봄 안전망 강화, 지역순환경제 활성화',
     chatbotGuide: '도시·농촌 상생형 생활권 공동체, 마을교육공동체, 통합돌봄에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example11',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-11-store',
     referenceUrls: [
       'https://www.mois.go.kr/frt/sub/a06/b08/localExtinct/screen.do',
@@ -298,7 +298,7 @@ export const agendas: Agenda[] = [
     whyImportant: '마을활동은 지역사회 유지와 공동체 회복에 중요한 공공적 가치를 가지지만, 여전히 자원봉사나 희생 중심으로 인식되는 한계가 있습니다. 활동시간·경험·성과에 대한 인정체계 마련과 활동가 소진 예방이 시급합니다.',
     expectedEffect: '마을활동가 사회적 지위 향상, 활동수당·교육비 지원으로 안정적 활동 기반 마련, 경력인증제를 통한 전문성 인정, 활동가 소진 예방으로 지속가능한 마을활동 생태계 구축',
     chatbotGuide: '마을활동 가치 재정립, 인정보상체계, 경력인증제, 소진예방에 관한 자료 기반 안내를 제공합니다.',
-    googleFormUrl: 'https://forms.gle/example12',
+    googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
     fileSearchStoreName: 'policy-12-store',
     referenceUrls: [
       'https://www.k-village.or.kr',
