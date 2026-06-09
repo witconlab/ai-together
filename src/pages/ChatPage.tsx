@@ -12,6 +12,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showQuestions, setShowQuestions] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -43,6 +44,13 @@ export default function ChatPage() {
         agendaId: agenda!.agendaId,
         message: msg,
         sessionId: getSessionId(),
+        agendaContext: {
+          title: agenda!.title,
+          summary: agenda!.summary,
+          whyImportant: agenda!.whyImportant,
+          expectedEffect: agenda!.expectedEffect,
+          referenceUrls: agenda!.referenceUrls,
+        },
       })
       const assistantMsg: ChatMessage = {
         role: 'assistant',
@@ -69,14 +77,57 @@ export default function ChatPage() {
       </div>
 
       <div className="bg-white border-b px-4 py-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-            {agenda.agendaId.replace('policy-', '')}번
-          </span>
-          <h1 className="font-bold text-navy-800 text-sm leading-tight">{agenda.title}</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
+              {agenda.agendaId.replace('policy-', '')}번
+            </span>
+            <h1 className="font-bold text-navy-800 text-sm leading-tight truncate">{agenda.title}</h1>
+          </div>
+          <button
+            onClick={() => setShowQuestions((v) => !v)}
+            className="shrink-0 ml-2 text-xs font-medium px-3 py-1.5 rounded-full min-h-0 border transition-colors
+              bg-navy-50 border-navy-200 text-navy-600 hover:bg-navy-100"
+          >
+            {showQuestions ? '질문 닫기 ✕' : '💡 예시 질문'}
+          </button>
         </div>
         <p className="text-gray-400 text-xs mt-0.5">정책 매니저 챗봇</p>
       </div>
+
+      {/* 예시 질문 패널 — 항상 접근 가능 */}
+      {showQuestions && (
+        <div className="bg-navy-50 border-b border-navy-100 px-4 py-3">
+          <p className="text-navy-600 text-xs font-bold mb-2">질문을 눌러 바로 전송</p>
+          <div className="flex flex-col gap-1.5">
+            {agenda.sampleQuestions.map((q, i) => (
+              <button
+                key={i}
+                onClick={() => { send(q); setShowQuestions(false) }}
+                className="text-left bg-white hover:bg-navy-100 text-navy-800 text-sm rounded-xl px-3 py-2.5 border border-navy-200 min-h-0 leading-snug"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+          {agenda.referenceUrls && agenda.referenceUrls.length > 0 && (
+            <div className="mt-3 pt-2 border-t border-navy-200">
+              <p className="text-navy-500 text-xs font-bold mb-1">📎 참고 자료</p>
+              {agenda.referenceUrls.map((url, i) => (
+                <a
+                  key={i}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-xs text-navy-500 hover:text-navy-700 underline truncate"
+                >
+                  {url}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">

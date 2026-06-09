@@ -1,9 +1,18 @@
 const WORKER_URL = import.meta.env.VITE_WORKER_URL || 'http://localhost:8787'
 
+type AgendaContext = {
+  title: string
+  summary: string
+  whyImportant: string
+  expectedEffect: string
+  referenceUrls?: string[]
+}
+
 type ChatRequest = {
   agendaId: string
   message: string
   sessionId: string
+  agendaContext?: AgendaContext
 }
 
 type ChatResponse = {

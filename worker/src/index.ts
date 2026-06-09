@@ -102,14 +102,42 @@ export default {
           agendaId: string
           message: string
           sessionId: string
+          agendaContext?: {
+            title: string
+            summary: string
+            whyImportant: string
+            expectedEffect: string
+            referenceUrls?: string[]
+          }
         }
 
         if (!checkRateLimit(body.sessionId)) {
           return json({ message: '잠시 후 다시 시도해 주세요. (5초에 1회 제한)' }, 429, cors)
         }
 
-        const prompt = `[의제: ${body.agendaId}]\n\n주민 질문: ${body.message}\n\n위 질문에 답변해 주세요.`
-        const answer = await gemini(env.GEMINI_API_KEY, 'gemini-2.5-flash', prompt, CHATBOT_SYSTEM)
+        // 정책 컨텍스트를 시스템 프롬프트에 주입
+        const ctx = body.agendaContext
+        const contextBlock = ctx
+          ? `\n\n=== 이번 토론 정책 정보 ===
+정책명: ${ctx.title}
+요약: ${ctx.summary}
+
+[제안 배경]
+${ctx.whyImportant}
+
+[기대 효과]
+${ctx.expectedEffect}
+${
+  ctx.referenceUrls && ctx.referenceUrls.length > 0
+    ? `\n[참고 자료 URL]\n${ctx.referenceUrls.map((u) => '- ' + u).join('\n')}\n(위 URL들의 내용을 알고 있다면 답변에 활용하세요.)`
+    : ''
+}
+=========================`
+          : `\n\n정책 ID: ${body.agendaId}`
+
+        const systemWithContext = CHATBOT_SYSTEM + contextBlock
+        const prompt = `주민 질문: ${body.message}\n\n위 질문에 답변해 주세요.`
+        const answer = await gemini(env.GEMINI_API_KEY, 'gemini-2.5-flash', prompt, systemWithContext)
 
         // 토론 질문 추출: "💬 함께 토론해볼 질문" 헤더 다음 줄에서 추출
         const lines = answer.split('\n')

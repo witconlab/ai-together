@@ -14,6 +14,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '읍면동장 주민 선출제 및 전문직위제 도입과 관련된 제안 배경, 기대효과, 쟁점을 자료 기반으로 안내합니다.',
     googleFormUrl: 'https://forms.gle/example1',
     fileSearchStoreName: 'policy-01-store',
+    referenceUrls: [
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+      'https://www.law.go.kr/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=%EC%A3%BC%EB%AF%BC%EC%9E%90%EC%B9%98',
+      'https://www.mois.go.kr/frt/bbs/type010/commonSelectBoardArticle.do?bbsId=BBSMSTR_000000000008&nttId=103578',
+    ],
     sampleQuestions: [
       '읍면동장을 주민이 직접 선출하면 어떤 점이 달라지나요?',
       '전문직위제(개방직)와 현행 순환보직제의 차이는 무엇인가요?',
@@ -35,6 +40,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '마을공동체 재정 자립 방안, 주민세 환원, 시민참여예산 연계, 공동체기금 운영에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example2',
     fileSearchStoreName: 'policy-02-store',
+    referenceUrls: [
+      'https://www.mois.go.kr/frt/sub/a06/b03/participateBudget/screen.do',
+      'https://www.ilovegohyang.go.kr',
+      'https://www.law.go.kr/lsSc.do?query=%EC%A3%BC%EB%AF%BC%EC%84%B8',
+    ],
     sampleQuestions: [
       '주민세 환원이란 구체적으로 어떤 방식인가요?',
       '시민참여예산과 주민총회 의제는 어떻게 연결되나요?',
@@ -56,6 +66,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '전남·광주 행정통합과 마을자치 통합체계에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example3',
     fileSearchStoreName: 'policy-03-store',
+    referenceUrls: [
+      'https://www.gwangju.go.kr',
+      'https://www.jeonnam.go.kr',
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+    ],
     sampleQuestions: [
       '도시형과 농촌형 마을자치의 차이는 무엇인가요?',
       '전남·광주 통합 이후 마을자치 정책은 어떻게 달라지나요?',
@@ -77,6 +92,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '통합 조례 마련, 주민자치회 조례, 마을공동체 기본법과 관련된 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example4',
     fileSearchStoreName: 'policy-04-store',
+    referenceUrls: [
+      'https://www.law.go.kr/lsSc.do?query=%EC%A3%BC%EB%AF%BC%EC%9E%90%EC%B9%98%ED%9A%8C',
+      'https://www.law.go.kr/lsSc.do?query=%EB%A7%88%EC%9D%84%EA%B3%B5%EB%8F%99%EC%B2%B4+%ED%99%9C%EC%84%B1%ED%99%94',
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+    ],
     sampleQuestions: [
       '주민자치회 조례와 마을공동체 기본조례는 어떻게 다른가요?',
       '마을공동체 활성화 기본법이 통과되면 무엇이 달라지나요?',
@@ -98,6 +118,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '창의적 공유공간 활용, 마을실험실, 공동체 거점공간 조성에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example5',
     fileSearchStoreName: 'policy-05-store',
+    referenceUrls: [
+      'https://www.kcuf.kr',
+      'https://www.molit.go.kr/USR/policyData/m_34681/dtl?id=4382',
+      'https://www.k-village.or.kr',
+    ],
     sampleQuestions: [
       '우리 마을에서 활용 가능한 유휴공간은 어떻게 찾을 수 있나요?',
       '마을실험실이란 무엇이고 어떻게 운영되나요?',
@@ -119,6 +144,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '전남·광주 통합지원기관의 역할, 기능, 조직 구성에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example6',
     fileSearchStoreName: 'policy-06-store',
+    referenceUrls: [
+      'https://www.k-village.or.kr',
+      'https://www.gjmaeul.or.kr',
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+    ],
     sampleQuestions: [
       '현재 전남과 광주의 중간지원조직은 어떻게 구성되어 있나요?',
       '통합지원기관은 어떤 기능을 담당해야 하나요?',
@@ -140,6 +170,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '주민자치회 성장단계별 지원체계, 운영 매뉴얼, 제도화에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example7',
     fileSearchStoreName: 'policy-07-store',
+    referenceUrls: [
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+      'https://www.law.go.kr/lsSc.do?query=%EC%A3%BC%EB%AF%BC%EC%9E%90%EC%B9%98%ED%9A%8C+%EC%9A%B4%EC%98%81',
+      'https://www.krila.re.kr',
+    ],
     sampleQuestions: [
       '주민자치회 성장 단계는 어떻게 구분하나요?',
       '단계별로 어떤 지원이 제공되어야 하나요?',
@@ -161,6 +196,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '주민자치회 대표성 강화, 유형별 시범사업, 숙의 방식 공론장에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example8',
     fileSearchStoreName: 'policy-08-store',
+    referenceUrls: [
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+      'https://www.krila.re.kr',
+      'https://deliberation.kdi.re.kr',
+    ],
     sampleQuestions: [
       '주민자치회 대표성 문제는 왜 발생하나요?',
       '도시형과 농촌형 시범사업은 어떻게 다르게 설계되나요?',
@@ -182,6 +222,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '마을자치 한마당, 전국주민자치박람회 유치, 네트워크 구축에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example9',
     fileSearchStoreName: 'policy-09-store',
+    referenceUrls: [
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+      'https://www.k-village.or.kr',
+      'https://www.gjmaeul.or.kr',
+    ],
     sampleQuestions: [
       '전국주민자치박람회는 어떤 행사인가요?',
       '통합 마을자치 한마당은 어떻게 운영되나요?',
@@ -203,6 +248,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: 'k시민주권 사관학교, 자격증제, 마을활동가 교육체계에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example10',
     fileSearchStoreName: 'policy-10-store',
+    referenceUrls: [
+      'https://www.kird.re.kr',
+      'https://www.k-village.or.kr',
+      'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
+    ],
     sampleQuestions: [
       'k시민주권 사관학교는 누가 참여할 수 있나요?',
       '마을활동가 자격증제는 어떻게 운영되나요?',
@@ -224,6 +274,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '도시·농촌 상생형 생활권 공동체, 마을교육공동체, 통합돌봄에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example11',
     fileSearchStoreName: 'policy-11-store',
+    referenceUrls: [
+      'https://www.mois.go.kr/frt/sub/a06/b08/localExtinct/screen.do',
+      'https://www.mohw.go.kr/react/policy/index.jsp?PAR_MENU_ID=06&MENU_ID=063601',
+      'https://www.ke.re.kr',
+    ],
     sampleQuestions: [
       '도시와 농촌이 상생하는 생활권 공동체란 무엇인가요?',
       '마을교육공동체는 어떻게 구성하고 운영하나요?',
@@ -245,6 +300,11 @@ export const agendas: Agenda[] = [
     chatbotGuide: '마을활동 가치 재정립, 인정보상체계, 경력인증제, 소진예방에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://forms.gle/example12',
     fileSearchStoreName: 'policy-12-store',
+    referenceUrls: [
+      'https://www.k-village.or.kr',
+      'https://www.gjmaeul.or.kr',
+      'https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=2318&cntntsId=7680',
+    ],
     sampleQuestions: [
       '마을활동가 활동수당은 어떤 방식으로 지급하나요?',
       '마을활동 경력인증제는 어떻게 운영되나요?',
