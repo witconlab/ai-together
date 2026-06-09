@@ -7,6 +7,8 @@ import type { SlideDeckPlan, SlideImagePlan } from '../types'
 const slideCounts = [5, 6, 7, 8]
 const styles = ['공공기관 발표자료', '따뜻한 지역 공동체 슬라이드', '실사 기반 발표 슬라이드']
 
+const GPT_URL = 'https://chatgpt.com/g/g-6a286481dfe881919b3c851a50f931eb-maeuljaci-jeongcaeg-seulraideu-meikeo'
+
 // 슬라이드 카드 (이미지 생성 전/후)
 function SlideCard({
   slide,
@@ -237,8 +239,37 @@ export default function SlideDeck() {
         정책 제안안을 입력하면 <strong>Gemini</strong>가 슬라이드 구성안을 만들고,
         <strong> DALL-E 3</strong>가 슬라이드 배경 이미지를 생성합니다.
       </p>
+      {/* GPT 바로가기 카드 */}
+      <a
+        href={GPT_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block mb-6 rounded-2xl overflow-hidden border-2 border-teal-400 hover:border-teal-500 transition-colors"
+      >
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-4 py-3 flex items-center gap-3">
+          <span className="text-2xl">🤖</span>
+          <div className="flex-1">
+            <p className="text-white font-black text-base">ChatGPT GPT로 이미지 바로 만들기</p>
+            <p className="text-teal-100 text-xs mt-0.5">마을자치 정책 슬라이드 메이커 열기 →</p>
+          </div>
+          <span className="text-white text-xl">↗</span>
+        </div>
+        <div className="bg-teal-50 px-4 py-2">
+          <p className="text-teal-700 text-xs leading-relaxed">
+            ① 아래에서 구성안 생성 → ② 프롬프트 복사 → ③ GPT에 붙여넣기 → ④ 이미지 5장 자동 생성
+          </p>
+        </div>
+      </a>
+
+      {/* 구분선 */}
+      <div className="flex items-center gap-3 mb-5">
+        <div className="flex-1 h-px bg-gray-200" />
+        <span className="text-gray-400 text-xs font-medium">또는 API로 자동 생성 후 PPT 다운로드</span>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+
       <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 mb-6">
-        <p className="text-amber-700 text-sm">⚠️ 이미지 생성 시 OpenAI API 비용이 발생합니다. 운영진만 사용해 주세요.</p>
+        <p className="text-amber-700 text-sm">⚠️ API 이미지 생성 시 OpenAI 비용이 발생합니다. 운영진만 사용해 주세요.</p>
       </div>
 
       {/* ── STEP 1: 슬라이드 구성안 입력 ─────────────────────────── */}

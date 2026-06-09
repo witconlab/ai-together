@@ -278,12 +278,22 @@ export default function Dashboard() {
                 <div className="w-7 h-7 rounded-full bg-teal-500 text-white font-black text-sm flex items-center justify-center shrink-0">1</div>
                 <h3 className="font-bold text-navy-800 text-base">발표용 슬라이드 제작</h3>
               </div>
-              <p className="text-gray-500 text-sm mb-3 leading-relaxed">
-                최종 논의 내용을 입력하면 16:9 슬라이드 구성안을 생성합니다.<br />
-                <span className="text-amber-600 font-medium">비용: Gemini API 소량 (행사 1회 약 $0.01~0.05)</span>
+              <p className="text-gray-500 text-sm mb-2 leading-relaxed">
+                정책 제안안을 입력하면 5장 슬라이드를 만들어 드립니다.
               </p>
-              <Link to="/slide-deck" className="btn-teal text-center block text-lg py-4">
-                🖼️ 발표용 슬라이드 제작하기
+              {/* GPT 바로가기 */}
+              <a
+                href="https://chatgpt.com/g/g-6a286481dfe881919b3c851a50f931eb-maeuljaci-jeongcaeg-seulraideu-meikeo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl px-4 py-3 mb-2 transition-colors"
+              >
+                <span className="text-lg">🤖</span>
+                <span className="font-bold text-sm flex-1">ChatGPT GPT로 이미지 만들기</span>
+                <span className="text-xs text-teal-200">추천 ↗</span>
+              </a>
+              <Link to="/slide-deck" className="btn-secondary text-center block text-sm py-2.5">
+                🖼️ 구성안 생성 + API 자동 제작
               </Link>
             </div>
 
