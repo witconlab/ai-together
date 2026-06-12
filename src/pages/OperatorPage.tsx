@@ -4,8 +4,8 @@ import { getAgenda } from '../data/agendas'
 import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import { HtmlSlideThumb } from './SlideEditorPage'
-import { ACCENT_COLORS } from '../types/htmlSlide'
 import type { HSlide } from '../types/htmlSlide'
+import { buildHtmlSlides } from '../utils/slideBuilder'
 
 export default function OperatorPage() {
   const { agendaId } = useParams<{ agendaId: string }>()
@@ -80,39 +80,18 @@ export default function OperatorPage() {
   const handleGenerateAndOpen = async () => {
     setGenerating(true)
     try {
-      const title = agenda?.title || ''
-      const keywords = (agenda?.tags || []).slice(0, 6)
-
-      const agreeOps = opinions.filter(o => o.agree_content).slice(0, 3).map(o => o.agree_content)
-      const concerns = opinions.filter(o => o.concern).slice(0, 2).map(o => o.concern)
-      const improves = opinions.filter(o => o.improvement).slice(0, 3).map(o => o.improvement)
-      const firstActs = opinions.filter(o => o.first_action).slice(0, 2).map(o => o.first_action)
-      const keySents = opinions.filter(o => o.key_sentence).slice(0, 3).map(o => `"${o.key_sentence}"`)
-
-      const slideContents = [
-        { label: '정책 제목과 핵심 키워드', body: keywords.join('\n') || title },
-        { label: '왜 이 정책이 필요한가', body: [tableIntro || agenda?.whyImportant, ...agreeOps.map(t => `✅ "${t}"`)].filter(Boolean).join('\n') },
-        { label: '시민들이 나눈 이야기', body: tiroSummary || [...agreeOps.map(t => `✅ ${t}`), ...concerns.map(t => `⚠️ ${t}`), ...improves.map(t => `💡 ${t}`)].join('\n') || '시민들이 다양한 의견을 나눴습니다.' },
-        { label: '최종 정책 제안', body: [...improves, ...firstActs.map(t => `[우선실행] ${t}`)].join('\n') || `${title} 실현을 위한 제도 정비\n주민 참여 기구 구성\n단계별 시범사업 추진` },
-        { label: '기대 효과와 우선 과제', body: [agenda?.expectedEffect, ...keySents].filter(Boolean).join('\n') || '주민 자치 역량 강화' },
-      ]
-
-      const { makeId, defaultTextEl } = await import('../types/htmlSlide')
-      const newSlides: HSlide[] = slideContents.map((sc, i) => {
-        const accent = ACCENT_COLORS[i]
-        const bg = htmlSlides?.[i]?.bg || '#1a2458'
-        const isFirst = i === 0
-        const mainText = isFirst ? title : sc.body
-        return {
-          id: htmlSlides?.[i]?.id || makeId(),
-          bg,
-          elements: [
-            defaultTextEl(sc.label, { id: makeId(), x: 40, y: 18, w: 880, h: 50, fontSize: 13, color: accent, bold: true, z: 2 }),
-            defaultTextEl(mainText, { id: makeId(), x: 40, y: 78, w: 880, h: isFirst ? 320 : 390, fontSize: isFirst ? 40 : 21, color: '#ffffff', bold: isFirst, z: 1, lineHeight: isFirst ? 1.3 : 1.75 }),
-            ...(isFirst && sc.body ? [defaultTextEl(sc.body, { id: makeId(), x: 40, y: 420, w: 880, h: 80, fontSize: 14, color: accent, z: 3 })] : []),
-          ],
-        }
-      })
+      const newSlides = buildHtmlSlides({
+        title: agenda?.title || '',
+        keywords: (agenda?.tags || []).slice(0, 6),
+        tableIntro: tableIntro || agenda?.whyImportant || '',
+        agreeOps: opinions.filter(o => o.agree_content).slice(0, 3).map(o => o.agree_content),
+        concerns: opinions.filter(o => o.concern).slice(0, 2).map(o => o.concern),
+        improves: opinions.filter(o => o.improvement).slice(0, 3).map(o => o.improvement),
+        firstActs: opinions.filter(o => o.first_action).slice(0, 2).map(o => o.first_action),
+        keySents: opinions.filter(o => o.key_sentence).slice(0, 3).map(o => o.key_sentence),
+        tiroSummary,
+        expectedEffect: agenda?.expectedEffect || '',
+      }, htmlSlides ?? undefined)
 
       await upsertSession({
         table_intro: tableIntro,
@@ -124,7 +103,7 @@ export default function OperatorPage() {
       navigate(`/slide-editor/${agendaId}`)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      alert(`저장 실패: ${msg}\n\nSupabase에 html_slides 컬럼이 없을 수 있습니다.\nALTER TABLE table_sessions ADD COLUMN IF NOT EXISTS html_slides JSONB;`)
+      alert(`저장 실패: ${msg}`)
       navigate(`/slide-editor/${agendaId}`)
     } finally {
       setGenerating(false)

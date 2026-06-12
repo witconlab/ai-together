@@ -4,8 +4,9 @@ import { getAgenda } from '../data/agendas'
 import { supabase } from '../lib/supabase'
 import {
   SW, SH, HEl, HSlide, Align,
-  makeId, defaultTextEl, defaultImageEl, defaultSlide, ACCENT_COLORS,
+  defaultTextEl, defaultImageEl, defaultSlide,
 } from '../types/htmlSlide'
+import { buildHtmlSlides } from '../utils/slideBuilder'
 
 /* ─── constants ─── */
 const SNAP_PX = 8
@@ -360,50 +361,32 @@ export default function SlideEditorPage() {
   const handleGenerate = async () => {
     setGenerating(true)
     try {
-      const title = agenda?.title || ''
-      const keywords = (agenda?.tags || []).slice(0, 6)
-      const agreeOps = opinions.filter(o => o.agree_content).slice(0, 3).map(o => o.agree_content)
-      const concerns = opinions.filter(o => o.concern).slice(0, 2).map(o => o.concern)
-      const improves = opinions.filter(o => o.improvement).slice(0, 3).map(o => o.improvement)
-      const firstActs = opinions.filter(o => o.first_action).slice(0, 2).map(o => o.first_action)
-      const keySents = opinions.filter(o => o.key_sentence).slice(0, 3).map(o => `"${o.key_sentence}"`)
-
-      const slideContents = [
-        { label: '정책 제목과 핵심 키워드', body: keywords.join('\n') || title },
-        { label: '왜 이 정책이 필요한가',   body: [tableIntro || agenda?.whyImportant, ...agreeOps.map(t => `✅ "${t}"`)].filter(Boolean).join('\n') },
-        { label: '시민들이 나눈 이야기',     body: tiroSummary || [...agreeOps.map(t=>`✅ ${t}`), ...concerns.map(t=>`⚠️ ${t}`), ...improves.map(t=>`💡 ${t}`)].join('\n') || '시민들이 다양한 의견을 나눴습니다.' },
-        { label: '최종 정책 제안',           body: [...improves, ...firstActs.map(t => `[우선실행] ${t}`)].join('\n') || `${title} 실현을 위한 제도 정비\n주민 참여 기구 구성\n단계별 시범사업 추진` },
-        { label: '기대 효과와 우선 과제',    body: [agenda?.expectedEffect, ...keySents].filter(Boolean).join('\n') || '주민 자치 역량 강화\n지역 현안 해결' },
-      ]
-
-      const newSlides: HSlide[] = slideContents.map((sc, i) => {
-        const accent = ACCENT_COLORS[i]
-        const bg = slides[i]?.bg || '#1a2458'
-        const isFirst = i === 0
-        const mainText = isFirst ? title : sc.body
-        const subText = isFirst ? sc.body : ''
-        const els: HEl[] = [
-          defaultTextEl(sc.label, { id: makeId(), x: 40, y: 18, w: 880, h: 50, fontSize: 13, color: accent, bold: true, z: 2 }),
-          defaultTextEl(mainText, {
-            id: makeId(), x: 40, y: 78, w: 880, h: isFirst ? 320 : 390,
-            fontSize: isFirst ? 40 : 21, color: '#ffffff', bold: isFirst,
-            z: 1, lineHeight: isFirst ? 1.3 : 1.75,
-          }),
-        ]
-        if (isFirst && subText) {
-          els.push(defaultTextEl(subText, {
-            id: makeId(), x: 40, y: 420, w: 880, h: 80,
-            fontSize: 14, color: accent, z: 3,
-          }))
-        }
-        return { id: slides[i]?.id || makeId(), bg, elements: els }
-      })
-
+      const newSlides = buildHtmlSlides({
+        title: agenda?.title || '',
+        keywords: (agenda?.tags || []).slice(0, 6),
+        tableIntro: tableIntro || agenda?.whyImportant || '',
+        agreeOps: opinions.filter(o => o.agree_content).slice(0, 3).map(o => o.agree_content),
+        concerns: opinions.filter(o => o.concern).slice(0, 2).map(o => o.concern),
+        improves: opinions.filter(o => o.improvement).slice(0, 3).map(o => o.improvement),
+        firstActs: opinions.filter(o => o.first_action).slice(0, 2).map(o => o.first_action),
+        keySents: opinions.filter(o => o.key_sentence).slice(0, 3).map(o => o.key_sentence),
+        tiroSummary,
+        expectedEffect: agenda?.expectedEffect || '',
+      }, slides)
       setSlides(newSlides)
       setCurIdx(0)
       setSelectedId(null)
     } finally {
       setGenerating(false)
+    }
+  }
+
+  /* ── fullscreen ── */
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    } else {
+      document.exitFullscreen().catch(() => {})
     }
   }
 
@@ -563,6 +546,10 @@ export default function SlideEditorPage() {
         <button onClick={handlePPTX} disabled={!!exporting}
           style={{ background: '#7c3aed', border: 'none', color: 'white', fontWeight: 700, fontSize: 11, padding: '6px 10px', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           {exporting === 'pptx' ? '…' : '⬇PPTX'}
+        </button>
+        <button onClick={handleFullscreen}
+          style={{ background: '#334155', border: 'none', color: 'white', fontWeight: 700, fontSize: 11, padding: '6px 10px', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          ⛶ 전체화면
         </button>
         <button onClick={handleSave} disabled={saving}
           style={{ background: '#2dd4bf', border: 'none', color: '#0f172a', fontWeight: 900, fontSize: 11, padding: '6px 10px', borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap' }}>

@@ -713,7 +713,17 @@ export default function Dashboard() {
                             의견 {opCount}
                           </span>
                           {sess?.is_confirmed && (
-                            <span style={{ fontSize: 10, background: '#d1fae5', color: '#065f46', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>완료</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                              <span style={{ fontSize: 10, background: '#d1fae5', color: '#065f46', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>완료</span>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm(`${num}번 테이블 제출완료를 취소하시겠습니까?`)) return
+                                  await supabase.from('table_sessions').update({ is_confirmed: false }).eq('policy_id', agenda.agendaId)
+                                  loadData()
+                                }}
+                                style={{ fontSize: 9, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '1px 6px', borderRadius: 12, cursor: 'pointer', fontWeight: 600 }}
+                              >취소</button>
+                            </span>
                           )}
                           {((sess as any)?.html_slides || (sess as any)?.slides) && (
                             <span style={{ fontSize: 10, background: '#ede9fe', color: '#6d28d9', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>슬라이드 ✅</span>
@@ -798,17 +808,26 @@ export default function Dashboard() {
 /* ── HTML 슬라이드 발표 모달 ── */
 function HtmlPresentationMode({ slides, title, onClose }: { slides: HSlide[]; title: string; onClose: () => void }) {
   const [idx, setIdx] = useState(0)
+  const [isFs, setIsFs] = useState(false)
   const total = slides.length
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') setIdx(i => Math.min(i + 1, total - 1))
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') setIdx(i => Math.max(i - 1, 0))
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') { document.exitFullscreen?.().catch(() => {}); onClose() }
+      if (e.key === 'f' || e.key === 'F') toggleFs()
     }
+    const onFsChange = () => setIsFs(!!document.fullscreenElement)
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    document.addEventListener('fullscreenchange', onFsChange)
+    return () => { window.removeEventListener('keydown', onKey); document.removeEventListener('fullscreenchange', onFsChange) }
   }, [total, onClose])
+
+  const toggleFs = () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {})
+    else document.exitFullscreen().catch(() => {})
+  }
 
   return (
     <div style={{
@@ -819,9 +838,12 @@ function HtmlPresentationMode({ slides, title, onClose }: { slides: HSlide[]; ti
     >
       {/* 상단 바 */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.6)', zIndex: 2 }}>
-        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70vw' }}>{title}</span>
+        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60vw' }}>{title}</span>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
           <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{idx + 1} / {total}</span>
+          <button onClick={toggleFs} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontWeight: 700 }}>
+            {isFs ? '⊡ 창 모드' : '⛶ 전체화면'}
+          </button>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontWeight: 700 }}>✕ 닫기</button>
         </div>
       </div>

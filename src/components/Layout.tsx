@@ -12,7 +12,7 @@ const ROLE_LABELS: Record<string, { label: string; emoji: string; color: string 
 
 export default function Layout({ children }: Props) {
   const location = useLocation()
-  const { role, policyId, clearRole } = useRole()
+  const { role, policyId } = useRole()
   const isLanding = location.pathname === '/'
 
   const roleInfo = role ? ROLE_LABELS[role] : null
@@ -22,12 +22,7 @@ export default function Layout({ children }: Props) {
       {!isLanding && (
         <header className="bg-navy-800 text-white px-4 py-3 sticky top-0 z-50 shadow-md">
           <div className="flex items-center gap-3">
-            <button
-              onClick={clearRole}
-              className="text-white/80 hover:text-white text-lg min-h-0"
-            >
-              <Link to="/">←</Link>
-            </button>
+            <Link to="/" className="text-white/80 hover:text-white text-lg">←</Link>
             <div className="flex-1">
               <p className="font-bold text-base leading-tight">AI 투게더 정책 공론장</p>
               {policyId && (
