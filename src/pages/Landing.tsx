@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useRole } from '../context/RoleContext'
 import { agendas } from '../data/agendas'
 
-const OPERATOR_PASSWORD = '2026'
+const OPERATOR_PASSWORD = '9292'
 
 type OpStep = 'login' | 'menu' | 'table-pick'
 
