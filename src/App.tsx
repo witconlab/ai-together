@@ -13,6 +13,7 @@ import OpinionForm from './pages/OpinionForm'
 import OpinionDone from './pages/OpinionDone'
 import OperatorPage from './pages/OperatorPage'
 import DocumentsPage from './pages/DocumentsPage'
+import SlideEditorPage from './pages/SlideEditorPage'
 import PolicyPicker from './pages/PolicyPicker'
 import VotePage from './pages/VotePage'
 
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/opinion-done/:agendaId" element={<OpinionDone />} />
             <Route path="/operator/:agendaId" element={<OperatorPage />} />
             <Route path="/operator/:agendaId/documents" element={<DocumentsPage />} />
+            <Route path="/slide-editor/:agendaId" element={<SlideEditorPage />} />
           </Routes>
         </Layout>
       </HashRouter>
