@@ -115,8 +115,8 @@ export default function Landing() {
           <h1 className="text-3xl font-black text-[#1a2458] leading-tight mt-1">
             최종 숙의 → 발표 슬라이드 5장
           </h1>
-          <p className="text-green-600 text-sm font-medium mt-2">
-            ✅ 구글 드라이브 연결됨 — 사진이 드라이브에 안전하게 저장됩니다
+          <p className="text-teal-600 text-sm font-medium mt-2">
+            ✅ 정리판 사진 최대 5장 · 슬라이드 자동 생성
           </p>
         </div>
 

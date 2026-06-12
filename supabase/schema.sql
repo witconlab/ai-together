@@ -29,6 +29,9 @@ CREATE TABLE IF NOT EXISTS table_sessions (
   is_confirmed BOOLEAN DEFAULT FALSE,         -- 최종 확정 여부
   tiro_summary TEXT,                          -- TIRO 요약 텍스트
   tiro_url TEXT,                              -- TIRO 요약 링크
+  table_intro TEXT,                           -- 테이블 소개 / 정책 배경
+  photos JSONB,                               -- 정리판 사진 base64 배열
+  slides JSONB,                               -- 발표 슬라이드 5장 내용
   pdf_url TEXT,                               -- 생성된 PDF URL
   pptx_url TEXT,                              -- 생성된 PPTX URL
   is_public TEXT DEFAULT 'private'            -- 'public' | 'private' | 'admin_only'
