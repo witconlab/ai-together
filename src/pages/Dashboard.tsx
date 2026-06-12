@@ -323,6 +323,7 @@ export default function Dashboard() {
   const [showVoteInput, setShowVoteInput] = useState(false)
   const [presentingSlides, setPresentingSlides] = useState<{ slides: SlideData; policyNum: string } | null>(null)
   const [activeSection, setActiveSection] = useState<'overview' | 'slides' | 'manage'>('overview')
+  const keywordCloudRef = useRef<HTMLDivElement>(null)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -414,6 +415,16 @@ export default function Dashboard() {
     })
 
     prs.writeFile({ fileName: `${policyNum}번_발표슬라이드.pptx` })
+  }
+
+  const downloadKeywordCloud = async () => {
+    if (!keywordCloudRef.current) return
+    const { default: html2canvas } = await import('html2canvas')
+    const canvas = await html2canvas(keywordCloudRef.current, { backgroundColor: '#ffffff', scale: 2 })
+    const a = document.createElement('a')
+    a.href = canvas.toDataURL('image/png')
+    a.download = `키워드클라우드_${selectedPolicy === 'all' ? '전체' : selectedPolicy.replace('policy-', '') + '번'}_${new Date().toISOString().slice(0,10)}.png`
+    a.click()
   }
 
   const saveVotes = (v: Record<string, number>) => {
@@ -581,8 +592,17 @@ export default function Dashboard() {
 
             {/* 키워드 버블 클라우드 */}
             <div style={{ background: 'white', borderRadius: 16, padding: '16px', marginBottom: 12 }}>
-              <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 900, color: '#1e293b' }}>키워드 버블 클라우드</h2>
-              <KeywordCloud opinions={opinions} selectedPolicy={selectedPolicy} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <h2 style={{ margin: 0, fontSize: 14, fontWeight: 900, color: '#1e293b' }}>키워드 버블 클라우드</h2>
+                <button onClick={downloadKeywordCloud} style={{
+                  background: 'transparent', border: '1px solid #e2e8f0',
+                  color: '#0369a1', fontWeight: 700, fontSize: 12, padding: '4px 10px',
+                  borderRadius: 8, cursor: 'pointer',
+                }}>⬇️ 이미지 저장</button>
+              </div>
+              <div ref={keywordCloudRef} style={{ background: 'white', padding: '8px 4px' }}>
+                <KeywordCloud opinions={opinions} selectedPolicy={selectedPolicy} />
+              </div>
             </div>
 
             {/* 실시간 의견 피드 */}
