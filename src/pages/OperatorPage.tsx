@@ -36,7 +36,7 @@ export default function OperatorPage() {
     }
   }, [role, navigate])
 
-  const [session, setSession] = useState<any>(null)
+  const [_session, setSession] = useState<any>(null)
   const [opinions, setOpinions] = useState<any[]>([])
   const [tableIntro, setTableIntro] = useState('')
   const [tiroUrl, setTiroUrl] = useState('')
