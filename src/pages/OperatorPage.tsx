@@ -274,11 +274,23 @@ export default function OperatorPage() {
             </button>
           )}
         </div>
-        <input type="file" accept="image/*" ref={fileRef} className="hidden"
-          onChange={e => {
-            if (e.target.files?.[0]) {
-              handlePhotoAdd(e.target.files[0])
-              e.target.value = ''  // 같은 파일 재선택 가능하도록 초기화
+        <input type="file" accept="image/*" multiple ref={fileRef} className="hidden"
+          onChange={async e => {
+            const files = Array.from(e.target.files || [])
+            if (!files.length) return
+            e.target.value = ''
+            const toAdd = files.slice(0, 5 - photos.length)
+            if (!toAdd.length) { alert('최대 5장까지 업로드할 수 있습니다.'); return }
+            setUploading(true)
+            try {
+              const newDataUrls = await Promise.all(toAdd.map(compressToBase64))
+              const newPhotos = [...photos, ...newDataUrls]
+              setPhotos(newPhotos)
+              await supabase.from('table_sessions').upsert({ policy_id: agendaId, photos: newPhotos })
+            } catch {
+              alert('사진 처리에 실패했습니다.')
+            } finally {
+              setUploading(false)
             }
           }} />
       </div>
