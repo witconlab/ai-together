@@ -100,22 +100,6 @@ export default function OperatorPage() {
       img.src = URL.createObjectURL(file)
     })
 
-  const handlePhotoAdd = async (file: File) => {
-    if (photos.length >= 5) { alert('최대 5장까지 업로드할 수 있습니다.'); return }
-    setUploading(true)
-    try {
-      const dataUrl = await compressToBase64(file)
-      const newPhotos = [...photos, dataUrl]
-      setPhotos(newPhotos)
-      await supabase.from('table_sessions').upsert({ policy_id: agendaId, photos: newPhotos })
-    } catch (e) {
-      console.error(e)
-      alert('사진 처리에 실패했습니다. 다시 시도해 주세요.')
-    } finally {
-      setUploading(false)
-    }
-  }
-
   const handlePhotoRemove = async (idx: number) => {
     const newPhotos = photos.filter((_, i) => i !== idx)
     setPhotos(newPhotos)
