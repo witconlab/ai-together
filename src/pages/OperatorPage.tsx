@@ -284,18 +284,19 @@ export default function OperatorPage() {
 
       {/* ③ AI 발표 텍스트 생성 */}
       <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5">
-        <h2 className="font-black text-navy-800 text-base mb-1">③ 정리판 사진으로 5장 발표 텍스트 자동 생성</h2>
-        <p className="text-gray-500 text-xs mb-3">사진 + 주민 의견 + Tiro 요약을 종합해 초안을 작성합니다. 생성 후 수정 가능합니다.</p>
+        <h2 className="font-black text-navy-800 text-base mb-1">③ 5장 발표 텍스트 자동 생성</h2>
+        <p className="text-gray-500 text-xs mb-3">
+          {photos.length > 0
+            ? '사진 + 주민 의견 + Tiro 요약을 종합해 초안을 작성합니다.'
+            : '정책 데이터 + 주민 의견 + Tiro 요약을 바탕으로 초안을 작성합니다. (사진 없이도 생성 가능)'}
+        </p>
         <button
           onClick={handleGenerate}
-          disabled={generating || photos.length === 0}
+          disabled={generating}
           className="bg-teal-500 hover:bg-teal-600 disabled:bg-gray-300 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors"
         >
           {generating ? '생성 중...' : '🤖 AI 발표 텍스트 생성'}
         </button>
-        {photos.length === 0 && (
-          <p className="text-gray-400 text-xs mt-2">① 정리판 사진을 먼저 업로드해 주세요.</p>
-        )}
       </div>
 
       {/* ④ 발표 슬라이드 편집 */}
