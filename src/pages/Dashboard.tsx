@@ -24,6 +24,9 @@ type Opinion = {
   agree_content: string | null
   concern: string | null
   improvement: string | null
+  first_action: string | null
+  key_sentence: string | null
+  anonymous_id: string | null
   created_at: string
   nickname: string | null
 }
@@ -326,7 +329,7 @@ export default function Dashboard() {
     try {
       const [{ data: sess }, { data: ops }] = await Promise.all([
         supabase.from('table_sessions').select('*'),
-        supabase.from('participant_opinions').select('policy_id, agree_content, concern, improvement, created_at, nickname'),
+        supabase.from('participant_opinions').select('policy_id, agree_content, concern, improvement, first_action, key_sentence, anonymous_id, created_at, nickname'),
       ])
       if (sess) setSessions(sess)
       if (ops) setOpinions(ops)
@@ -342,6 +345,35 @@ export default function Dashboard() {
     const id = setInterval(loadData, REFRESH_INTERVAL)
     return () => clearInterval(id)
   }, [role, navigate, loadData])
+
+  const downloadCSV = () => {
+    const header = ['번호', '정책ID', '정책명', '닉네임', '익명ID', '공감한내용', '걱정되는점', '보완점', '먼저실행할것', '발표한문장', '제출시각']
+    const rows = opinions.map((o, i) => {
+      const agenda = agendas.find(a => a.agendaId === o.policy_id)
+      const esc = (v: string | null) => `"${(v || '').replace(/"/g, '""')}"`
+      return [
+        i + 1,
+        o.policy_id,
+        esc(agenda?.title || ''),
+        esc(o.nickname),
+        esc(o.anonymous_id),
+        esc(o.agree_content),
+        esc(o.concern),
+        esc(o.improvement),
+        esc(o.first_action),
+        esc(o.key_sentence),
+        new Date(o.created_at).toLocaleString('ko-KR'),
+      ].join(',')
+    })
+    const csv = '﻿' + [header.join(','), ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `정책의견_${new Date().toISOString().slice(0,10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const saveVotes = (v: Record<string, number>) => {
     setVotes(v)
@@ -383,6 +415,7 @@ export default function Dashboard() {
             { icon: '🔄', label: '새로고침', action: loadData },
             { icon: '🖥️', label: '발표 슬라이드', action: () => setActiveSection('slides') },
             { icon: '📊', label: '메뉴', action: () => setActiveSection('manage') },
+            { icon: '⬇️', label: `의견 CSV (${opinions.length})`, action: downloadCSV },
           ].map(b => (
             <button key={b.label} onClick={b.action} style={{
               background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
