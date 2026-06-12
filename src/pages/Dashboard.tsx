@@ -375,6 +375,47 @@ export default function Dashboard() {
     URL.revokeObjectURL(url)
   }
 
+  const downloadPhotos = (policyNum: string, photos: string[]) => {
+    photos.forEach((dataUrl, i) => {
+      const a = document.createElement('a')
+      a.href = dataUrl
+      a.download = `${policyNum}번_사진_${i + 1}.jpg`
+      setTimeout(() => a.click(), i * 300)
+    })
+  }
+
+  const downloadSlidesPptx = async (policyNum: string, title: string, slides: SlideData) => {
+    const pptx = (await import('pptxgenjs')).default
+    const prs = new pptx()
+    prs.defineLayout({ name: 'WIDE', width: 10, height: 5.63 })
+    prs.layout = 'WIDE'
+
+    const colors = ['2dd4bf', '60a5fa', 'fbbf24', '34d399', 'c084fc']
+    const labels = ['정책 제목과 핵심 키워드', '왜 이 정책이 필요한가', '시민들이 나눈 이야기', '최종 정책 제안', '기대 효과와 우선 과제']
+    const bodies = [
+      `${slides.slide1_title}\n${slides.slide1_keywords}`,
+      slides.slide2, slides.slide3, slides.slide4, slides.slide5,
+    ]
+
+    bodies.forEach((body, i) => {
+      const sld = prs.addSlide()
+      sld.addShape(prs.ShapeType.rect, { x: 0, y: 0, w: 10, h: 5.63, fill: { color: '1a2458' } })
+      sld.addShape(prs.ShapeType.rect, { x: 0, y: 0, w: 0.18, h: 5.63, fill: { color: colors[i] } })
+      sld.addText(`${i + 1}/5`, { x: 8.5, y: 0.2, w: 1.3, h: 0.4, fontSize: 10, color: 'ffffff', align: 'right', bold: false })
+      sld.addText(labels[i], { x: 0.4, y: 0.2, w: 8, h: 0.5, fontSize: 11, color: colors[i], bold: true })
+      sld.addText(body || '', {
+        x: 0.4, y: 0.9, w: 9.2, h: 4.4,
+        fontSize: 18, color: 'ffffff', bold: i === 0,
+        valign: 'top', wrap: true, paraSpaceAfter: 8,
+      })
+      sld.addText(`${policyNum}번 정책 · ${title}`, {
+        x: 0.4, y: 5.25, w: 9.2, h: 0.3, fontSize: 8, color: '94a3b8',
+      })
+    })
+
+    prs.writeFile({ fileName: `${policyNum}번_발표슬라이드.pptx` })
+  }
+
   const saveVotes = (v: Record<string, number>) => {
     setVotes(v)
     localStorage.setItem('vote_counts', JSON.stringify(v))
@@ -612,32 +653,62 @@ export default function Dashboard() {
                 const num = agenda.agendaId.replace('policy-', '')
                 const opCount = opCountMap[agenda.agendaId] || 0
                 return (
-                  <Link
+                  <div
                     key={agenda.agendaId}
-                    to={`/operator/${agenda.agendaId}`}
                     style={{
                       background: 'white', borderRadius: 14, padding: '12px 14px',
-                      border: '1px solid #f1f5f9', textDecoration: 'none',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      border: '1px solid #f1f5f9',
                     }}
                   >
-                    <div>
-                      <span style={{ fontSize: 10, color: '#94a3b8' }}>{num}번 정책</span>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: '2px 0' }}>{agenda.title}</p>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <span style={{ fontSize: 10, background: opCount > 0 ? '#e0f2fe' : '#f1f5f9', color: opCount > 0 ? '#0369a1' : '#94a3b8', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>
-                          의견 {opCount}
-                        </span>
-                        {sess?.is_confirmed && (
-                          <span style={{ fontSize: 10, background: '#d1fae5', color: '#065f46', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>완료</span>
-                        )}
-                        {(sess as any)?.slides && (
-                          <span style={{ fontSize: 10, background: '#ede9fe', color: '#6d28d9', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>슬라이드 ✅</span>
-                        )}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <div>
+                        <span style={{ fontSize: 10, color: '#94a3b8' }}>{num}번 정책</span>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: '2px 0' }}>{agenda.title}</p>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <span style={{ fontSize: 10, background: opCount > 0 ? '#e0f2fe' : '#f1f5f9', color: opCount > 0 ? '#0369a1' : '#94a3b8', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>
+                            의견 {opCount}
+                          </span>
+                          {sess?.is_confirmed && (
+                            <span style={{ fontSize: 10, background: '#d1fae5', color: '#065f46', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>완료</span>
+                          )}
+                          {(sess as any)?.slides && (
+                            <span style={{ fontSize: 10, background: '#ede9fe', color: '#6d28d9', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>슬라이드 ✅</span>
+                          )}
+                        </div>
                       </div>
+                      <Link to={`/operator/${agenda.agendaId}`} style={{ color: '#94a3b8', fontSize: 16, textDecoration: 'none' }}>→</Link>
                     </div>
-                    <span style={{ color: '#94a3b8', fontSize: 16 }}>→</span>
-                  </Link>
+                    {/* 다운로드 버튼 */}
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {(sess as any)?.photos?.length > 0 && (
+                        <button
+                          onClick={() => downloadPhotos(num, (sess as any).photos)}
+                          style={{
+                            flex: 1, padding: '6px 0', fontSize: 11, fontWeight: 700,
+                            background: '#f0fdf4', color: '#16a34a',
+                            border: '1px solid #bbf7d0', borderRadius: 8, cursor: 'pointer',
+                          }}
+                        >
+                          📷 사진 {(sess as any).photos.length}장
+                        </button>
+                      )}
+                      {(sess as any)?.slides && (
+                        <button
+                          onClick={() => downloadSlidesPptx(num, agenda.title, (sess as any).slides)}
+                          style={{
+                            flex: 1, padding: '6px 0', fontSize: 11, fontWeight: 700,
+                            background: '#f5f3ff', color: '#7c3aed',
+                            border: '1px solid #ddd6fe', borderRadius: 8, cursor: 'pointer',
+                          }}
+                        >
+                          🎞️ 슬라이드 PPTX
+                        </button>
+                      )}
+                      {!(sess as any)?.photos?.length && !(sess as any)?.slides && (
+                        <span style={{ fontSize: 11, color: '#cbd5e1', padding: '6px 0' }}>저장된 파일 없음</span>
+                      )}
+                    </div>
+                  </div>
                 )
               })}
             </div>
