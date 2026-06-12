@@ -255,7 +255,12 @@ export default function OperatorPage() {
           )}
         </div>
         <input type="file" accept="image/*" ref={fileRef} className="hidden"
-          onChange={e => e.target.files?.[0] && handlePhotoAdd(e.target.files[0])} />
+          onChange={e => {
+            if (e.target.files?.[0]) {
+              handlePhotoAdd(e.target.files[0])
+              e.target.value = ''  // 같은 파일 재선택 가능하도록 초기화
+            }
+          }} />
       </div>
 
       {/* ② Tiro 회의록 */}
