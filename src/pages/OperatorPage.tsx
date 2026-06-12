@@ -128,7 +128,14 @@ export default function OperatorPage() {
       const workerUrl = import.meta.env.VITE_WORKER_URL
       let data: any = null
 
-      if (workerUrl) {
+      // 있는 데이터만 조합해서 초안 생성 (사진·의견·Tiro 모두 선택사항)
+      const opTexts = opinions.slice(0, 10)
+        .map(o => [o.agree_content, o.concern, o.improvement].filter(Boolean).join(' / '))
+        .filter(Boolean)
+        .join('\n')
+
+      if (workerUrl && photos.length > 0) {
+        // Worker API (사진 있을 때만)
         const res = await fetch(`${workerUrl}/analyze-photo`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -136,7 +143,7 @@ export default function OperatorPage() {
             photoUrl: photos[0],
             agendaTitle: agenda?.title,
             agendaSummary: agenda?.summary,
-            tiroSummary,
+            tiroSummary: tiroSummary || undefined,
             opinions: opinions.slice(0, 20),
           }),
         })
@@ -144,31 +151,44 @@ export default function OperatorPage() {
         if (!res.ok) throw new Error(json.message)
         data = json
       } else {
-        // Fallback: generate from local agenda data
-        const opTexts = opinions.slice(0, 10).map(o =>
-          [o.agree_content, o.concern, o.improvement].filter(Boolean).join(' / ')
-        ).join('\n')
+        // 로컬 데이터 기반 초안 (사진·Tiro·의견 없어도 동작)
+        const discussionLines: string[] = []
+        if (tiroSummary) discussionLines.push(`[Tiro 회의록 요약]\n${tiroSummary}`)
+        if (opTexts) discussionLines.push(`[참여 의견 요약]\n${opTexts}`)
+        if (!discussionLines.length) discussionLines.push(
+          `${agenda?.title}에 대해 시민들이 다양한 시각을 공유하고 심층 토론을 진행했습니다.\n테이블에서 나온 주요 의견을 정리하여 아래에 입력해 주세요.`
+        )
+
         data = {
           policy_title: agenda?.title || '',
           keywords: (agenda?.tags || []).slice(0, 5),
-          background: agenda?.whyImportant || '',
-          discussion: opTexts
-            ? `시민들은 다음과 같은 의견을 나눴습니다:\n${opTexts}`
-            : (tiroSummary || `${agenda?.title}에 대해 참여 시민들이 다양한 시각을 공유하고 심층 토론을 진행했습니다.`),
-          final_proposal: `${agenda?.title}을 실현하기 위해 다음을 제안합니다:\n- 관련 조례 및 제도 정비\n- 주민 참여 기구 구성\n- 단계별 시범사업 추진\n- 예산 확보 및 전담 부서 지정`,
+          background: tableIntro || agenda?.whyImportant || '',
+          discussion: discussionLines.join('\n\n'),
+          final_proposal: [
+            `${agenda?.title}을 실현하기 위해 다음을 제안합니다:`,
+            '- 관련 조례 및 제도 정비',
+            '- 주민 참여 기구 구성',
+            '- 단계별 시범사업 추진',
+            '- 예산 확보 및 전담 부서 지정',
+          ].join('\n'),
           expected_effect: agenda?.expectedEffect || '주민 자치 역량 강화, 지역 현안 해결, 행정-주민 신뢰 구축',
         }
       }
 
       setSlides({
         slide1_title: data.policy_title || agenda?.title || '',
-        slide1_keywords: (data.keywords || []).join('\n'),
+        slide1_keywords: Array.isArray(data.keywords) ? data.keywords.join('\n') : '',
         slide2: data.background || '',
         slide3: data.discussion || '',
         slide4: data.final_proposal || '',
         slide5: data.expected_effect || '',
       })
       await supabase.from('table_sessions').upsert({ policy_id: agendaId, ai_result: data })
+
+      // 생성 완료 후 슬라이드 편집 탭으로 스크롤
+      setTimeout(() => {
+        document.getElementById('slide-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
     } catch (e) {
       alert('AI 생성에 실패했습니다. 다시 시도해 주세요.')
     } finally {
