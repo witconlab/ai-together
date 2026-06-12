@@ -13,6 +13,27 @@ const HANDLE_SIZE = 10
 const FONTS = ['Noto Sans KR', 'Arial', 'Georgia', 'Courier New', '나눔고딕', '맑은 고딕']
 const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80]
 const BG_PRESETS = ['#1a2458', '#0f172a', '#1e3a3f', '#2d1b69', '#ffffff', '#f1f5f9', '#18181b', '#7f1d1d', '#14532d', '#1e3a5f']
+
+const THEMES = [
+  {
+    name: '다크네이비',
+    bgs: ['#1a2458','#152040','#1a2458','#12193a','#1a2458'],
+    accents: ['#2dd4bf','#60a5fa','#fbbf24','#34d399','#c084fc'],
+    textColor: '#ffffff',
+  },
+  {
+    name: '화이트클린',
+    bgs: ['#ffffff','#f8fafc','#ffffff','#f1f5f9','#ffffff'],
+    accents: ['#0d9488','#2563eb','#d97706','#16a34a','#9333ea'],
+    textColor: '#1e293b',
+  },
+  {
+    name: '차콜모던',
+    bgs: ['#1e293b','#0f172a','#1e293b','#0f172a','#1e293b'],
+    accents: ['#f59e0b','#38bdf8','#f87171','#4ade80','#e879f9'],
+    textColor: '#f1f5f9',
+  },
+]
 const HANDLES = [
   { id: 'nw', cx: 0,   cy: 0   }, { id: 'n',  cx: 0.5, cy: 0   }, { id: 'ne', cx: 1,   cy: 0   },
   { id: 'w',  cx: 0,   cy: 0.5 },                                    { id: 'e',  cx: 1,   cy: 0.5 },
@@ -386,18 +407,31 @@ export default function SlideEditorPage() {
     }
   }
 
+  /* ── theme apply ── */
+  const applyTheme = (t: typeof THEMES[0]) => {
+    setSlides(prev => prev.map((sl, i) => ({
+      ...sl,
+      bg: t.bgs[i] ?? t.bgs[0],
+      elements: sl.elements.map(el => {
+        if (el.type !== 'text') return el
+        const isLabel = el.fontSize <= 16
+        return { ...el, color: isLabel ? t.accents[i] ?? t.accents[0] : t.textColor }
+      }),
+    })))
+  }
+
   /* ── save ── */
   const handleSave = async () => {
     setSaving(true)
     try {
-      await supabase.from('table_sessions').upsert({
-        policy_id: agendaId,
-        html_slides: slides,
-        is_confirmed: true,
-      })
+      const { error } = await supabase
+        .from('table_sessions')
+        .upsert({ policy_id: agendaId, html_slides: slides, is_confirmed: true }, { onConflict: 'policy_id' })
+      if (error) throw new Error(error.message)
       alert('저장되었습니다.')
-    } catch { alert('저장 실패') }
-    finally { setSaving(false) }
+    } catch (err: unknown) {
+      alert(`저장 실패: ${err instanceof Error ? err.message : String(err)}`)
+    } finally { setSaving(false) }
   }
 
   /* ── PDF export ── */
@@ -545,6 +579,20 @@ export default function SlideEditorPage() {
             <span style={{ fontSize: 10, color: i === curIdx ? '#2dd4bf' : '#64748b', fontWeight: 700 }}>{i + 1}장</span>
           </div>
         ))}
+      </div>
+
+      {/* ── 테마 선택 ── */}
+      <div style={{ background: '#162032', padding: '6px 10px', display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0, borderBottom: '1px solid #334155' }}>
+        <span style={{ fontSize: 10, color: '#64748b', fontWeight: 700, flexShrink: 0 }}>테마</span>
+        {THEMES.map(t => (
+          <button key={t.name} onClick={() => applyTheme(t)} style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            background: t.bgs[0], border: `2px solid ${t.accents[0]}`,
+            color: t.textColor, borderRadius: 8, padding: '4px 10px',
+            fontSize: 11, fontWeight: 700, cursor: 'pointer', flexShrink: 0,
+          }}>{t.name}</button>
+        ))}
+        <span style={{ fontSize: 10, color: '#475569', marginLeft: 4 }}>← 클릭하면 모든 슬라이드에 적용</span>
       </div>
 
       {/* ── 툴바 ── */}

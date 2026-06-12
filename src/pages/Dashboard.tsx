@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import { PresentationMode, SlideGridThumb, EMPTY_SLIDES } from '../components/SlideRenderer'
 import type { SlideData } from '../components/SlideRenderer'
+import { HtmlSlideThumb, SlideRender } from './SlideEditorPage'
+import type { HSlide } from '../types/htmlSlide'
 
 const REFRESH_INTERVAL = 7000
 
@@ -322,6 +324,7 @@ export default function Dashboard() {
   const [showTimer, setShowTimer] = useState(false)
   const [showVoteInput, setShowVoteInput] = useState(false)
   const [presentingSlides, setPresentingSlides] = useState<{ slides: SlideData; policyNum: string } | null>(null)
+  const [presentingHtml, setPresentingHtml] = useState<{ slides: HSlide[]; title: string } | null>(null)
   const [activeSection, setActiveSection] = useState<'overview' | 'slides' | 'manage'>('overview')
   const keywordCloudRef = useRef<HTMLDivElement>(null)
 
@@ -625,9 +628,11 @@ export default function Dashboard() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               {agendas.map(agenda => {
                 const sess = getSession(agenda.agendaId)
-                const slides: SlideData = (sess as any)?.slides ?? EMPTY_SLIDES
                 const num = agenda.agendaId.replace('policy-', '')
-                const hasSlides = !!(sess as any)?.slides
+                const htmlSlides: HSlide[] | null = Array.isArray((sess as any)?.html_slides) && (sess as any).html_slides.length > 0
+                  ? (sess as any).html_slides : null
+                const oldSlides: SlideData = (sess as any)?.slides ?? EMPTY_SLIDES
+                const hasOld = !!(sess as any)?.slides
 
                 return (
                   <div key={agenda.agendaId} style={{
@@ -639,14 +644,33 @@ export default function Dashboard() {
                       display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                       {agenda.title}
                     </p>
-                    <SlideGridThumb
-                      slides={slides}
-                      policyNum={num}
-                      onClick={hasSlides ? () => setPresentingSlides({ slides, policyNum: num }) : undefined}
-                    />
-                    {hasSlides ? (
+
+                    {/* HTML 슬라이드 썸네일 */}
+                    {htmlSlides ? (
+                      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4 }}>
+                        {htmlSlides.slice(0, 5).map((sl, i) => (
+                          <div key={sl.id} style={{ flexShrink: 0, textAlign: 'center' }}>
+                            <HtmlSlideThumb slide={sl} width={70}
+                              onClick={() => setPresentingHtml({ slides: htmlSlides, title: `${num}번 ${agenda.title}` })} />
+                            <span style={{ fontSize: 9, color: '#94a3b8' }}>{i + 1}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : hasOld ? (
+                      <SlideGridThumb slides={oldSlides} policyNum={num}
+                        onClick={() => setPresentingSlides({ slides: oldSlides, policyNum: num })} />
+                    ) : (
+                      <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: '#f8fafc', borderRadius: 8, border: '1px dashed #e2e8f0' }}>
+                        <span style={{ fontSize: 10, color: '#cbd5e1' }}>슬라이드 미저장</span>
+                      </div>
+                    )}
+
+                    {(htmlSlides || hasOld) ? (
                       <button
-                        onClick={() => setPresentingSlides({ slides, policyNum: num })}
+                        onClick={() => htmlSlides
+                          ? setPresentingHtml({ slides: htmlSlides, title: `${num}번 ${agenda.title}` })
+                          : setPresentingSlides({ slides: oldSlides, policyNum: num })}
                         style={{
                           marginTop: 8, width: '100%', background: '#1a2458', color: 'white',
                           border: 'none', borderRadius: 8, padding: '7px 0', fontSize: 11,
@@ -691,7 +715,7 @@ export default function Dashboard() {
                           {sess?.is_confirmed && (
                             <span style={{ fontSize: 10, background: '#d1fae5', color: '#065f46', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>완료</span>
                           )}
-                          {(sess as any)?.slides && (
+                          {((sess as any)?.html_slides || (sess as any)?.slides) && (
                             <span style={{ fontSize: 10, background: '#ede9fe', color: '#6d28d9', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>슬라이드 ✅</span>
                           )}
                         </div>
@@ -712,7 +736,19 @@ export default function Dashboard() {
                           📷 사진 {(sess as any).photos.length}장
                         </button>
                       )}
-                      {(sess as any)?.slides && (
+                      {(sess as any)?.html_slides && (
+                        <button
+                          onClick={() => setPresentingHtml({ slides: (sess as any).html_slides, title: `${num}번 ${agenda.title}` })}
+                          style={{
+                            flex: 1, padding: '6px 0', fontSize: 11, fontWeight: 700,
+                            background: '#f5f3ff', color: '#7c3aed',
+                            border: '1px solid #ddd6fe', borderRadius: 8, cursor: 'pointer',
+                          }}
+                        >
+                          🖥️ 발표 모드
+                        </button>
+                      )}
+                      {!(sess as any)?.html_slides && (sess as any)?.slides && (
                         <button
                           onClick={() => downloadSlidesPptx(num, agenda.title, (sess as any).slides)}
                           style={{
@@ -724,7 +760,7 @@ export default function Dashboard() {
                           🎞️ 슬라이드 PPTX
                         </button>
                       )}
-                      {!(sess as any)?.photos?.length && !(sess as any)?.slides && (
+                      {!(sess as any)?.photos?.length && !(sess as any)?.html_slides && !(sess as any)?.slides && (
                         <span style={{ fontSize: 11, color: '#cbd5e1', padding: '6px 0' }}>저장된 파일 없음</span>
                       )}
                     </div>
@@ -747,6 +783,71 @@ export default function Dashboard() {
           policyNum={presentingSlides.policyNum}
           onClose={() => setPresentingSlides(null)}
         />
+      )}
+      {presentingHtml && (
+        <HtmlPresentationMode
+          slides={presentingHtml.slides}
+          title={presentingHtml.title}
+          onClose={() => setPresentingHtml(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+/* ── HTML 슬라이드 발표 모달 ── */
+function HtmlPresentationMode({ slides, title, onClose }: { slides: HSlide[]; title: string; onClose: () => void }) {
+  const [idx, setIdx] = useState(0)
+  const total = slides.length
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') setIdx(i => Math.min(i + 1, total - 1))
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') setIdx(i => Math.max(i - 1, 0))
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [total, onClose])
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: '#000', zIndex: 9999,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    }}
+      onClick={e => { if (e.target === e.currentTarget) setIdx(i => Math.min(i + 1, total - 1)) }}
+    >
+      {/* 상단 바 */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '10px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.6)', zIndex: 2 }}>
+        <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70vw' }}>{title}</span>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{idx + 1} / {total}</span>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontWeight: 700 }}>✕ 닫기</button>
+        </div>
+      </div>
+
+      {/* 슬라이드 */}
+      <div style={{ width: '100%', maxWidth: 'min(90vw, calc(90vh * 16/9))', aspectRatio: '16/9', position: 'relative' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+          <SlideRender slide={slides[idx]} />
+        </div>
+      </div>
+
+      {/* 하단 썸네일 스트립 */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.7)', padding: '8px 12px', display: 'flex', gap: 6, justifyContent: 'center', overflowX: 'auto' }}>
+        {slides.map((sl, i) => (
+          <button key={sl.id} onClick={() => setIdx(i)} style={{ background: 'none', border: `2px solid ${i === idx ? '#2dd4bf' : 'transparent'}`, borderRadius: 6, padding: 2, cursor: 'pointer', flexShrink: 0 }}>
+            <HtmlSlideThumb slide={sl} width={64} />
+          </button>
+        ))}
+      </div>
+
+      {/* 좌우 화살표 */}
+      {idx > 0 && (
+        <button onClick={() => setIdx(i => i - 1)} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', fontSize: 24, width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+      )}
+      {idx < total - 1 && (
+        <button onClick={() => setIdx(i => i + 1)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', fontSize: 24, width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
       )}
     </div>
   )
