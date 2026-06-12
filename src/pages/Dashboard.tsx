@@ -595,9 +595,9 @@ export default function Dashboard() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                 <h2 style={{ margin: 0, fontSize: 14, fontWeight: 900, color: '#1e293b' }}>키워드 버블 클라우드</h2>
                 <button onClick={downloadKeywordCloud} style={{
-                  background: 'transparent', border: '1px solid #e2e8f0',
+                  flexShrink: 0, background: 'transparent', border: '1px solid #e2e8f0',
                   color: '#0369a1', fontWeight: 700, fontSize: 12, padding: '4px 10px',
-                  borderRadius: 8, cursor: 'pointer',
+                  borderRadius: 8, cursor: 'pointer', whiteSpace: 'nowrap',
                 }}>⬇️ 이미지 저장</button>
               </div>
               <div ref={keywordCloudRef} style={{ background: 'white', padding: '8px 4px' }}>
