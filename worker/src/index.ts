@@ -182,7 +182,7 @@ async function geminiCall(
   }
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
   )
   if (!res.ok) {
@@ -315,7 +315,19 @@ ${ctx.expectedEffect}${
 
           const systemWithCtx = CHATBOT_SYSTEM + contextBlock
           const prompt = `주민 질문: ${body.message}\n\n위 질문에 답변해 주세요.`
-          const answer = await gemini(env, prompt, systemWithCtx, fileRefs.length > 0 ? fileRefs : undefined)
+
+          let answer: string
+          try {
+            answer = await gemini(env, prompt, systemWithCtx, fileRefs.length > 0 ? fileRefs : undefined)
+          } catch (geminiErr) {
+            // Gemini API 오류 시 Mock 응답 (UI 테스트용)
+            const errMsg = geminiErr instanceof Error ? geminiErr.message : String(geminiErr)
+            if (errMsg.includes('401') || errMsg.includes('UNAUTHENTICATED') || errMsg.includes('키가 설정되지')) {
+              answer = `**[테스트 모드 응답]** API 키 설정을 확인 중입니다.\n\n**쉬운 요약**\n"${body.message}" 질문을 잘 받았습니다. 현재 AI 서버 키 인증 문제로 임시 응답을 드립니다.\n\n**자료에서 확인되는 내용**\n정책 자료를 기반으로 답변하려면 Gemini API 키 인증이 필요합니다.\n\n**함께 생각해볼 쟁점**\n- 찬성: 주민 직접 참여로 지역 민주주의 강화\n- 우려: 전문성 부족 및 행정 혼란 가능성\n\n**💬 함께 토론해볼 질문**\n우리 마을에서 이 정책이 실제로 시행된다면 어떤 변화가 생길까요?`
+            } else {
+              throw geminiErr
+            }
+          }
 
           // 토론 질문 추출
           const lines = answer.split('\n')
@@ -448,6 +460,109 @@ imagePrompt 작성 규칙:
           const match = raw.match(/\{[\s\S]*\}/)
           if (!match) throw new Error('응답 형식 오류')
           return json(JSON.parse(match[0]), 200, cors)
+        } finally {
+          releaseSemaphore()
+        }
+      }
+
+      // ── /analyze-photo (수기 정리판 사진 AI 분석) ──────────────────
+      if (url.pathname === '/analyze-photo') {
+        const body = (await request.json()) as {
+          photoUrl: string
+          agendaTitle?: string
+          agendaSummary?: string
+          opinions?: Array<{ agree_content?: string; concern?: string; improvement?: string; first_action?: string; key_sentence?: string }>
+        }
+
+        if (!body.photoUrl) return json({ message: '사진 URL이 필요합니다.' }, 400, cors)
+
+        const geminiKeys = getGeminiKeys(env)
+        if (!geminiKeys.length) return json({ message: 'Gemini API 키가 설정되지 않았습니다.' }, 500, cors)
+
+        try {
+          await acquireSemaphore()
+        } catch {
+          return waitingResponse(cors)
+        }
+
+        try {
+          // 사진을 base64로 다운로드
+          const imgRes = await fetch(body.photoUrl)
+          if (!imgRes.ok) throw new Error('사진을 불러올 수 없습니다.')
+          const ab = await imgRes.arrayBuffer()
+          const base64 = arrayBufferToBase64(ab)
+          const mimeType = imgRes.headers.get('content-type') || 'image/jpeg'
+
+          // 참여자 의견 요약 (최대 10개)
+          const opinionSummary = (body.opinions || []).slice(0, 10).map((o, i) =>
+            `참여자${i+1}: 공감(${o.agree_content||'-'}) 우려(${o.concern||'-'}) 보완(${o.improvement||'-'})`
+          ).join('\n')
+
+          const prompt = `당신은 주민 숙의 공론장의 AI 기록 도우미입니다.
+아래 사진은 "${body.agendaTitle || '정책'}" 정책에 대한 35분 수기 숙의 후 작성된 정리판입니다.
+${body.agendaSummary ? `정책 요약: ${body.agendaSummary}` : ''}
+${opinionSummary ? `\n사전 참여자 의견:\n${opinionSummary}` : ''}
+
+사진 속 수기 내용을 읽고 아래 JSON 형식으로 정리해 주세요.
+글씨가 불명확한 부분은 문맥을 고려해 추론하고, 없는 내용은 빈 문자열로 두세요.
+
+반드시 아래 JSON만 반환하세요 (다른 텍스트 없이):
+{
+  "agree_content": "공감한 내용 요약",
+  "concern": "걱정되는 점 요약",
+  "improvement": "보완하면 좋을 점 요약",
+  "first_action": "먼저 실행할 내용 요약",
+  "key_sentence": "발표에 넣을 핵심 문장",
+  "core_problem": "핵심 문제 한 줄 요약",
+  "final_proposal": "최종 정책 제안 내용",
+  "implementation": "실행 방법",
+  "expected_effect": "기대 효과",
+  "risks_and_supplements": "우려점과 보완 방안"
+}`
+
+          // 모든 Gemini 키 순서대로 시도
+          let lastError = ''
+          let resultJson: object | null = null
+
+          for (let attempt = 0; attempt < geminiKeys.length; attempt++) {
+            const key = geminiKeys[(geminiKeyIndex + attempt) % geminiKeys.length]
+            try {
+              const geminiRes = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    contents: [{
+                      parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: mimeType, data: base64 } }
+                      ]
+                    }],
+                    generationConfig: { temperature: 0.2, maxOutputTokens: 2048 }
+                  })
+                }
+              )
+              if (!geminiRes.ok) {
+                const err = await geminiRes.text()
+                lastError = err
+                continue
+              }
+              const geminiData = await geminiRes.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> }
+              const raw = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || ''
+              const match = raw.match(/\{[\s\S]*\}/)
+              if (!match) { lastError = 'JSON 파싱 오류'; continue }
+              resultJson = JSON.parse(match[0])
+              geminiKeyIndex = (geminiKeyIndex + attempt + 1) % geminiKeys.length
+              break
+            } catch (e) {
+              lastError = String(e)
+              continue
+            }
+          }
+
+          if (!resultJson) throw new Error(`AI 분석 실패: ${lastError}`)
+          return json(resultJson, 200, cors)
         } finally {
           releaseSemaphore()
         }

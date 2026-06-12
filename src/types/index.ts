@@ -9,6 +9,8 @@ export type Agenda = {
   whyImportant: string
   expectedEffect: string
   notionUrl?: string
+  notebookLmUrl?: string
+  driveUrl?: string
   referenceUrls?: string[]
   chatbotGuide: string
   googleFormUrl: string

@@ -1,36 +1,44 @@
 import { HashRouter, Routes, Route } from 'react-router-dom'
+import { RoleProvider } from './context/RoleContext'
 import Layout from './components/Layout'
-import Home from './pages/Home'
+import Landing from './pages/Landing'
 import AgendaList from './pages/AgendaList'
 import AgendaDetail from './pages/AgendaDetail'
-import ChatPage from './pages/ChatPage'
-import QuestionGuide from './pages/QuestionGuide'
 import DiscussionGuide from './pages/DiscussionGuide'
-import SubmitResult from './pages/SubmitResult'
 import Dashboard from './pages/Dashboard'
 import PolicyProposal from './pages/PolicyProposal'
 import Presentation from './pages/Presentation'
 import SlideDeck from './pages/SlideDeck'
+import OpinionForm from './pages/OpinionForm'
+import OpinionDone from './pages/OpinionDone'
+import OperatorPage from './pages/OperatorPage'
+import DocumentsPage from './pages/DocumentsPage'
+import PolicyPicker from './pages/PolicyPicker'
+import VotePage from './pages/VotePage'
 
 export default function App() {
   return (
-    <HashRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/agendas" element={<AgendaList />} />
-          <Route path="/agenda/:agendaId" element={<AgendaDetail />} />
-          <Route path="/chat/:agendaId" element={<ChatPage />} />
-          <Route path="/question-guide" element={<QuestionGuide />} />
-          <Route path="/discussion-guide" element={<DiscussionGuide />} />
-          <Route path="/submit" element={<SubmitResult />} />
-          <Route path="/submit/:agendaId" element={<SubmitResult />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/policy-proposal" element={<PolicyProposal />} />
-          <Route path="/presentation" element={<Presentation />} />
-          <Route path="/slide-deck" element={<SlideDeck />} />
-        </Routes>
-      </Layout>
-    </HashRouter>
+    <RoleProvider>
+      <HashRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/agendas" element={<AgendaList />} />
+            <Route path="/agenda/:agendaId" element={<AgendaDetail />} />
+            <Route path="/discussion-guide" element={<DiscussionGuide />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/policy-proposal" element={<PolicyProposal />} />
+            <Route path="/presentation" element={<Presentation />} />
+            <Route path="/slide-deck" element={<SlideDeck />} />
+            <Route path="/policy-pick/:mode" element={<PolicyPicker />} />
+            <Route path="/vote" element={<VotePage />} />
+            <Route path="/opinion/:agendaId" element={<OpinionForm />} />
+            <Route path="/opinion-done/:agendaId" element={<OpinionDone />} />
+            <Route path="/operator/:agendaId" element={<OperatorPage />} />
+            <Route path="/operator/:agendaId/documents" element={<DocumentsPage />} />
+          </Routes>
+        </Layout>
+      </HashRouter>
+    </RoleProvider>
   )
 }

@@ -1,332 +1,629 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { agendas } from '../data/agendas'
+import { supabase } from '../lib/supabase'
+import { useRole } from '../context/RoleContext'
+import { PresentationMode, SlideGridThumb, EMPTY_SLIDES } from '../components/SlideRenderer'
+import type { SlideData } from '../components/SlideRenderer'
 
-// 7단계 진행 체크리스트
-const STAGES = [
-  { num: 1, label: '정책 제안 공유', duration: '5분', icon: '📋' },
-  { num: 2, label: 'AI 정책 학습', duration: '15분', icon: '🤖' },
-  { num: 3, label: '숙의 토론', duration: '35분', icon: '💬' },
-  { num: 4, label: '개별 정책 의견 제출', duration: '10분', icon: '📝' },
-  { num: 5, label: '최종 정책 제안서 제출 및 Tiro 녹취록 제출', duration: '5분', icon: '📤' },
-  { num: 6, label: '발표자 슬라이드 제작', duration: '10분', icon: '🖼️' },
-  { num: 7, label: '최종 발표 준비 완료', duration: '10분', icon: '🎤' },
-]
+const REFRESH_INTERVAL = 7000
 
-// 정책별 가상 제출 현황 (실제는 Google Sheets 연동)
-type AgendaStatus = {
-  agendaId: string
-  submitted: number
-  total: number
-  stage: number
+type SessionRow = {
+  policy_id: string
+  facilitator_name: string | null
+  recorder_name: string | null
+  photo_url: string | null
+  ai_result: object | null
+  is_confirmed: boolean
+  tiro_summary: string | null
+  slides?: SlideData | null
 }
 
-const initialStatus: AgendaStatus[] = agendas.map((a) => ({
-  agendaId: a.agendaId,
-  submitted: 0,
-  total: 5,
-  stage: 0,
-}))
+type Opinion = {
+  policy_id: string
+  agree_content: string | null
+  concern: string | null
+  improvement: string | null
+  created_at: string
+  nickname: string | null
+}
 
-export default function Dashboard() {
-  const [stageChecks, setStageChecks] = useState<boolean[]>(Array(7).fill(false))
-  const [agendaStatus, setAgendaStatus] = useState<AgendaStatus[]>(initialStatus)
-  const [activeTab, setActiveTab] = useState<'overview' | 'checklist' | 'materials'>('overview')
+function fmt(sec: number) {
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  const s = sec % 60
+  if (h > 0) return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+}
 
-  const completedStages = stageChecks.filter(Boolean).length
-  const currentStage = stageChecks.findIndex((v) => !v)
-  const totalSubmitted = agendaStatus.reduce((sum, a) => sum + a.submitted, 0)
-  const totalTables = agendaStatus.reduce((sum, a) => sum + a.total, 0)
+/* ── Timer Modal ── */
+function TimerModal({ onClose }: { onClose: () => void }) {
+  const [mode, setMode] = useState<'stopwatch' | 'countdown'>('stopwatch')
+  const [running, setRunning] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const [targetMin, setTargetMin] = useState(100)
+  const iRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  function toggleStage(i: number) {
-    setStageChecks((prev) => {
-      const next = [...prev]
-      // 순서대로만 체크 가능
-      if (i === 0 || prev[i - 1]) next[i] = !prev[i]
-      return next
-    })
-  }
+  useEffect(() => {
+    if (running) {
+      iRef.current = setInterval(() => setElapsed(e => e + 1), 1000)
+    } else {
+      if (iRef.current) clearInterval(iRef.current)
+    }
+    return () => { if (iRef.current) clearInterval(iRef.current) }
+  }, [running])
 
-  function updateSubmitted(agendaId: string, delta: number) {
-    setAgendaStatus((prev) =>
-      prev.map((a) =>
-        a.agendaId === agendaId
-          ? { ...a, submitted: Math.max(0, Math.min(a.total, a.submitted + delta)) }
-          : a
-      )
-    )
-  }
+  const reset = () => { setRunning(false); setElapsed(0) }
+
+  const display = mode === 'countdown'
+    ? Math.max(0, targetMin * 60 - elapsed)
+    : elapsed
+
+  const progress = mode === 'countdown' ? Math.min(1, elapsed / (targetMin * 60)) : 0
 
   return (
-    <div className="max-w-lg mx-auto pb-10">
-      {/* 헤더 */}
-      <div className="bg-navy-800 text-white px-4 py-5">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">운영진 전용</span>
-        </div>
-        <h1 className="text-2xl font-black">공론장 운영 대시보드</h1>
-        <p className="text-white/60 text-sm mt-1">운영진 · 퍼실리테이터 · 기록자</p>
-
-        {/* 전체 진행률 */}
-        <div className="mt-4 bg-white/10 rounded-2xl p-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-white/80 text-sm font-medium">전체 진행 단계</span>
-            <span className="text-teal-300 font-bold">{completedStages} / 7단계</span>
-          </div>
-          <div className="w-full bg-white/20 rounded-full h-3">
-            <div
-              className="bg-teal-400 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${(completedStages / 7) * 100}%` }}
-            />
-          </div>
-          {currentStage >= 0 && (
-            <p className="text-white/60 text-xs mt-2">
-              현재: {STAGES[currentStage].icon} {STAGES[currentStage].label}
-            </p>
-          )}
-          {completedStages === 7 && (
-            <p className="text-teal-300 text-sm mt-2 font-bold">✅ 모든 단계 완료!</p>
-          )}
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }} onClick={onClose}>
+      <div style={{
+        background: '#1a2458', borderRadius: 24, padding: '32px 28px',
+        width: 320, boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+      }} onClick={e => e.stopPropagation()}>
+        {/* Mode tabs */}
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: 4, marginBottom: 24 }}>
+          {(['stopwatch','countdown'] as const).map(m => (
+            <button key={m} onClick={() => { setMode(m); reset() }} style={{
+              flex: 1, padding: '8px 0', borderRadius: 8, border: 'none',
+              background: mode === m ? '#2dd4bf' : 'transparent',
+              color: mode === m ? '#1a2458' : 'rgba(255,255,255,0.5)',
+              fontWeight: 700, fontSize: 13, cursor: 'pointer',
+            }}>
+              {m === 'stopwatch' ? '경과 시간' : '카운트다운'}
+            </button>
+          ))}
         </div>
 
-        {/* 제출 현황 요약 */}
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <div className="bg-white/10 rounded-xl p-3 text-center">
-            <div className="text-2xl font-black text-teal-300">{totalSubmitted}</div>
-            <div className="text-white/60 text-xs">총 제출</div>
-          </div>
-          <div className="bg-white/10 rounded-xl p-3 text-center">
-            <div className="text-2xl font-black text-white">{totalTables}</div>
-            <div className="text-white/60 text-xs">전체 테이블</div>
-          </div>
-          <div className="bg-white/10 rounded-xl p-3 text-center">
-            <div className="text-2xl font-black text-amber-300">
-              {totalTables > 0 ? Math.round((totalSubmitted / totalTables) * 100) : 0}%
-            </div>
-            <div className="text-white/60 text-xs">제출률</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 탭 */}
-      <div className="flex border-b border-gray-200 bg-white sticky top-[56px] z-40">
-        {[
-          { key: 'overview', label: '📊 현황' },
-          { key: 'checklist', label: '✅ 진행 체크' },
-          { key: 'materials', label: '📄 자료 만들기' },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key as typeof activeTab)}
-            className={`flex-1 py-3 text-sm font-bold min-h-0 border-b-2 transition-colors ${
-              activeTab === tab.key
-                ? 'border-navy-700 text-navy-700'
-                : 'border-transparent text-gray-400'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 탭 내용 */}
-      <div className="px-4 py-5">
-
-        {/* 📊 현황 탭 */}
-        {activeTab === 'overview' && (
-          <div className="flex flex-col gap-4">
-            <h2 className="font-bold text-navy-700 text-lg">정책별 제출 현황</h2>
-            {agendaStatus.map((status) => {
-              const agenda = agendas.find((a) => a.agendaId === status.agendaId)
-              const pct = Math.round((status.submitted / status.total) * 100)
-              return (
-                <div key={status.agendaId} className="card">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-navy-800 text-base">{agenda?.title}</h3>
-                      <p className="text-gray-400 text-xs mt-0.5">{agenda?.category}</p>
-                    </div>
-                    <span className={`text-sm font-bold px-2 py-0.5 rounded-full ${
-                      pct === 100 ? 'bg-teal-100 text-teal-700' :
-                      pct >= 50 ? 'bg-amber-100 text-amber-700' :
-                      'bg-gray-100 text-gray-500'
-                    }`}>
-                      {status.submitted}/{status.total}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        pct === 100 ? 'bg-teal-500' : 'bg-navy-500'
-                      }`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  {/* 수동 제출 수 조정 (실제는 Sheets 연동) */}
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-gray-400">수동 업데이트</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateSubmitted(status.agendaId, -1)}
-                        className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 font-bold min-h-0 flex items-center justify-center"
-                      >
-                        −
-                      </button>
-                      <span className="font-bold text-navy-700 w-6 text-center">{status.submitted}</span>
-                      <button
-                        onClick={() => updateSubmitted(status.agendaId, 1)}
-                        className="w-8 h-8 rounded-full bg-navy-100 text-navy-700 font-bold min-h-0 flex items-center justify-center"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  {agenda?.googleSheetUrl && (
-                    <a
-                      href={agenda.googleSheetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 text-xs text-navy-500 underline block"
-                    >
-                      Google Sheets에서 확인 →
-                    </a>
-                  )}
-                </div>
-              )
-            })}
+        {/* Countdown minute picker */}
+        {mode === 'countdown' && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 16 }}>
+            <button onClick={() => setTargetMin(m => Math.max(1, m - 10))} style={btnRound}>−</button>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, minWidth: 60, textAlign: 'center' }}>{targetMin}분</span>
+            <button onClick={() => setTargetMin(m => m + 10)} style={btnRound}>+</button>
           </div>
         )}
 
-        {/* ✅ 진행 체크 탭 */}
-        {activeTab === 'checklist' && (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="font-bold text-navy-700 text-lg">진행 단계 체크리스트</h2>
-              <span className="text-sm text-gray-400">{completedStages}/7 완료</span>
-            </div>
-            <p className="text-gray-400 text-sm -mt-1 mb-2">순서대로 완료 후 체크하세요.</p>
+        {/* Time display */}
+        <div style={{
+          textAlign: 'center', fontSize: 64, fontWeight: 900,
+          color: mode === 'countdown' && display < 60 ? '#f87171' : 'white',
+          letterSpacing: 2, fontVariantNumeric: 'tabular-nums',
+          marginBottom: 8,
+        }}>
+          {fmt(display)}
+        </div>
 
-            {STAGES.map((stage, i) => {
-              const done = stageChecks[i]
-              const locked = i > 0 && !stageChecks[i - 1]
-              const active = !done && !locked
+        {/* Progress bar (countdown only) */}
+        {mode === 'countdown' && (
+          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 4, height: 4, marginBottom: 16 }}>
+            <div style={{ height: 4, borderRadius: 4, background: '#2dd4bf', width: `${progress * 100}%`, transition: 'width 1s linear' }} />
+          </div>
+        )}
 
-              return (
-                <button
-                  key={i}
-                  onClick={() => toggleStage(i)}
-                  disabled={locked}
-                  className={`w-full text-left rounded-2xl p-4 border-2 transition-all min-h-0 ${
-                    done
-                      ? 'bg-teal-50 border-teal-300'
-                      : active
-                      ? 'bg-white border-navy-300 shadow-sm'
-                      : 'bg-gray-50 border-gray-100 opacity-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-lg font-black ${
-                      done
-                        ? 'bg-teal-500 text-white'
-                        : active
-                        ? 'bg-navy-700 text-white'
-                        : 'bg-gray-200 text-gray-400'
-                    }`}>
-                      {done ? '✓' : stage.num}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">{stage.icon}</span>
-                        <span className={`font-bold text-base ${
-                          done ? 'text-teal-700 line-through' :
-                          active ? 'text-navy-800' : 'text-gray-400'
-                        }`}>
-                          {stage.label}
-                        </span>
-                      </div>
-                      <span className={`text-sm ${done ? 'text-teal-500' : 'text-gray-400'}`}>
-                        {stage.duration}
-                        {done && ' · 완료'}
-                        {active && ' · 진행 중'}
-                        {locked && ' · 대기'}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'center', marginBottom: 24 }}>
+          {running ? (mode === 'stopwatch' ? '일시 정지 · 경과 시간' : '일시 정지 · 남은 시간') : '▶ 타이머 시작'}
+        </div>
 
-            {completedStages === 7 && (
-              <div className="mt-4 bg-teal-50 border-2 border-teal-300 rounded-2xl p-4 text-center">
-                <p className="text-2xl mb-1">🎉</p>
-                <p className="text-teal-700 font-black text-lg">모든 단계 완료!</p>
-                <p className="text-teal-600 text-sm mt-1">발표 준비가 완료되었습니다.</p>
+        {/* Controls */}
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <button onClick={reset} style={{ ...btnRound, background: 'rgba(255,255,255,0.1)' }}>↺</button>
+          <button onClick={() => setRunning(r => !r)} style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: running ? 'rgba(255,255,255,0.2)' : '#2dd4bf',
+            border: 'none', color: running ? 'white' : '#1a2458',
+            fontSize: 26, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {running ? '⏸' : '▶'}
+          </button>
+        </div>
+
+        <button onClick={onClose} style={{
+          marginTop: 24, width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)',
+          color: 'rgba(255,255,255,0.5)', borderRadius: 12, padding: '10px 0', cursor: 'pointer', fontSize: 13,
+        }}>닫기</button>
+      </div>
+    </div>
+  )
+}
+
+const btnRound: React.CSSProperties = {
+  width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)',
+  border: 'none', color: 'white', fontSize: 20, cursor: 'pointer',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+}
+
+/* ── Vote Input Modal ── */
+function VoteInputModal({
+  votes, onSave, onClose,
+}: {
+  votes: Record<string, number>
+  onSave: (v: Record<string, number>) => void
+  onClose: () => void
+}) {
+  const [local, setLocal] = useState<Record<string, number>>({ ...votes })
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300,
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+    }} onClick={onClose}>
+      <div style={{
+        background: 'white', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: 480,
+        padding: '20px 16px 32px', maxHeight: '80vh', overflowY: 'auto',
+      }} onClick={e => e.stopPropagation()}>
+        <h3 style={{ margin: '0 0 16px', fontWeight: 900, color: '#1a2458' }}>우선순위 투표 결과 입력</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {agendas.map(a => {
+            const num = a.agendaId.replace('policy-', '')
+            return (
+              <div key={a.agendaId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 12, color: '#64748b', width: 200, flexShrink: 0 }}>
+                  {num}. {a.title.slice(0, 18)}{a.title.length > 18 ? '…' : ''}
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  value={local[a.agendaId] ?? 0}
+                  onChange={e => setLocal(prev => ({ ...prev, [a.agendaId]: Number(e.target.value) }))}
+                  style={{
+                    width: 72, border: '1px solid #e2e8f0', borderRadius: 8,
+                    padding: '6px 10px', fontSize: 14, textAlign: 'center',
+                  }}
+                />
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>표</span>
               </div>
+            )
+          })}
+        </div>
+        <button onClick={() => { onSave(local); onClose() }} style={{
+          marginTop: 16, width: '100%', background: '#1a2458', color: 'white',
+          border: 'none', borderRadius: 12, padding: '14px 0', fontWeight: 900, fontSize: 15, cursor: 'pointer',
+        }}>저장</button>
+      </div>
+    </div>
+  )
+}
+
+/* ── Keyword Cloud ── */
+function KeywordCloud({ opinions, selectedPolicy }: { opinions: Opinion[]; selectedPolicy: string }) {
+  const filtered = selectedPolicy === 'all'
+    ? opinions
+    : opinions.filter(o => o.policy_id === selectedPolicy)
+
+  const freq: Record<string, number> = {}
+  filtered.forEach(o => {
+    const text = [o.agree_content, o.concern, o.improvement].filter(Boolean).join(' ')
+    text.split(/\s+/)
+      .map(w => w.replace(/[^\w가-힣]/g, ''))
+      .filter(w => w.length >= 2 && w.length <= 8)
+      .forEach(w => { freq[w] = (freq[w] || 0) + 1 })
+  })
+
+  const words = Object.entries(freq)
+    .filter(([,c]) => c >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 30)
+
+  const max = words[0]?.[1] || 1
+  const colors = ['#2dd4bf','#60a5fa','#fbbf24','#34d399','#c084fc','#f87171','#fb923c']
+
+  if (words.length === 0) return (
+    <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '20px 0' }}>의견 데이터가 없습니다</div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', padding: '8px 0' }}>
+      {words.map(([w, c], i) => {
+        const size = 11 + Math.round((c / max) * 14)
+        const color = colors[i % colors.length]
+        return (
+          <span key={w} style={{
+            fontSize: size, fontWeight: c > max * 0.5 ? 900 : 600,
+            color, background: `${color}15`, padding: '3px 8px',
+            borderRadius: 20, border: `1px solid ${color}40`,
+          }}>{w}</span>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ── Horizontal Bar ── */
+function HBar({ label, value, max, color, sub }: { label: string; value: number; max: number; color: string; sub?: string }) {
+  const pct = max > 0 ? (value / max) * 100 : 0
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+        <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>{label}</span>
+        <span style={{ fontSize: 12, color, fontWeight: 700 }}>{sub ?? value}</span>
+      </div>
+      <div style={{ background: '#f1f5f9', borderRadius: 4, height: 8 }}>
+        <div style={{
+          height: 8, borderRadius: 4, background: color,
+          width: `${Math.max(pct, 1)}%`, transition: 'width 0.5s ease',
+        }} />
+      </div>
+    </div>
+  )
+}
+
+/* ── Opinion Feed ── */
+function OpinionFeed({ opinions, selectedPolicy }: { opinions: Opinion[]; selectedPolicy: string }) {
+  const filtered = (selectedPolicy === 'all'
+    ? [...opinions]
+    : opinions.filter(o => o.policy_id === selectedPolicy))
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 20)
+
+  if (filtered.length === 0) return (
+    <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13, padding: '16px 0' }}>의견이 없습니다</div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {filtered.map((o, i) => {
+        const num = o.policy_id.replace('policy-', '')
+        const agenda = agendas.find(a => a.agendaId === o.policy_id)
+        const time = new Date(o.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+        return (
+          <div key={i} style={{
+            background: 'white', borderRadius: 12, padding: '10px 12px',
+            border: '1px solid #f1f5f9',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span style={{
+                fontSize: 10, background: '#e0f2fe', color: '#0369a1',
+                padding: '1px 7px', borderRadius: 20, fontWeight: 700,
+              }}>{num}번 정책</span>
+              <span style={{ fontSize: 10, color: '#94a3b8' }}>{time}</span>
+            </div>
+            {agenda && <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 4px', fontWeight: 600 }}>{agenda.title.slice(0,30)}</p>}
+            {o.agree_content && (
+              <p style={{ fontSize: 12, color: '#1e293b', margin: 0, lineHeight: 1.5 }}>
+                <span style={{ color: '#22c55e', fontWeight: 700 }}>+ </span>{o.agree_content.slice(0, 80)}{o.agree_content.length > 80 ? '…' : ''}
+              </p>
+            )}
+            {o.concern && (
+              <p style={{ fontSize: 12, color: '#1e293b', margin: '2px 0 0', lineHeight: 1.5 }}>
+                <span style={{ color: '#f59e0b', fontWeight: 700 }}>△ </span>{o.concern.slice(0, 60)}{o.concern.length > 60 ? '…' : ''}
+              </p>
             )}
           </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ── Main Dashboard ── */
+export default function Dashboard() {
+  const { role } = useRole()
+  const navigate = useNavigate()
+  const [sessions, setSessions] = useState<SessionRow[]>([])
+  const [opinions, setOpinions] = useState<Opinion[]>([])
+  const [loading, setLoading] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState('')
+  const [selectedPolicy, setSelectedPolicy] = useState('all')
+  const [votes, setVotes] = useState<Record<string, number>>(() => {
+    try { return JSON.parse(localStorage.getItem('vote_counts') || '{}') } catch { return {} }
+  })
+  const [showTimer, setShowTimer] = useState(false)
+  const [showVoteInput, setShowVoteInput] = useState(false)
+  const [presentingSlides, setPresentingSlides] = useState<{ slides: SlideData; policyNum: string } | null>(null)
+  const [activeSection, setActiveSection] = useState<'overview' | 'slides' | 'manage'>('overview')
+
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [{ data: sess }, { data: ops }] = await Promise.all([
+        supabase.from('table_sessions').select('*'),
+        supabase.from('participant_opinions').select('policy_id, agree_content, concern, improvement, created_at, nickname'),
+      ])
+      if (sess) setSessions(sess)
+      if (ops) setOpinions(ops)
+      setLastUpdate(new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (role !== 'admin') { navigate('/'); return }
+    loadData()
+    const id = setInterval(loadData, REFRESH_INTERVAL)
+    return () => clearInterval(id)
+  }, [role, navigate, loadData])
+
+  const saveVotes = (v: Record<string, number>) => {
+    setVotes(v)
+    localStorage.setItem('vote_counts', JSON.stringify(v))
+  }
+
+  const getSession = (pid: string) => sessions.find(s => s.policy_id === pid)
+
+  const opCountMap: Record<string, number> = {}
+  opinions.forEach(o => { opCountMap[o.policy_id] = (opCountMap[o.policy_id] || 0) + 1 })
+
+  const totalOpinions = opinions.length
+  const totalVotes = Object.values(votes).reduce((s, v) => s + v, 0)
+  const confirmedCount = sessions.filter(s => s.is_confirmed).length
+  const maxOpCount = Math.max(...Object.values(opCountMap), 1)
+  const maxVote = Math.max(...Object.values(votes), 1)
+
+  return (
+    <div style={{ minHeight: '100dvh', background: '#f8fafc', fontFamily: 'inherit' }}>
+
+      {/* ── Top Header ── */}
+      <div style={{ background: '#1a2458', padding: '12px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
+            운영 대시보드 · {loading ? '갱신 중...' : `${lastUpdate} 갱신`}
+          </span>
+          <span style={{ background: '#ef4444', color: 'white', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
+            운영진 전용
+          </span>
+        </div>
+        <h1 style={{ color: 'white', fontSize: 17, fontWeight: 900, margin: '0 0 10px' }}>
+          전남광주 통합특별시 시민주권 정책공론장
+        </h1>
+
+        {/* Action toolbar */}
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 10 }}>
+          {[
+            { icon: '⏱', label: '타이머', action: () => setShowTimer(true) },
+            { icon: '🔄', label: '새로고침', action: loadData },
+            { icon: '🖥️', label: '발표 슬라이드', action: () => setActiveSection('slides') },
+            { icon: '📊', label: '메뉴', action: () => setActiveSection('manage') },
+          ].map(b => (
+            <button key={b.label} onClick={b.action} style={{
+              background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)',
+              color: 'white', borderRadius: 10, padding: '7px 12px',
+              fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+              display: 'flex', alignItems: 'center', gap: 5,
+            }}>
+              <span>{b.icon}</span>{b.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Section tabs */}
+        <div style={{ display: 'flex', gap: 0, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          {[
+            { key: 'overview', label: '📊 현황' },
+            { key: 'slides', label: '🎞️ 슬라이드' },
+            { key: 'manage', label: '🔗 테이블 관리' },
+          ].map(t => (
+            <button key={t.key} onClick={() => setActiveSection(t.key as typeof activeSection)} style={{
+              flex: 1, padding: '10px 0', border: 'none', background: 'transparent',
+              color: activeSection === t.key ? '#2dd4bf' : 'rgba(255,255,255,0.4)',
+              fontWeight: 700, fontSize: 12, cursor: 'pointer',
+              borderBottom: `2px solid ${activeSection === t.key ? '#2dd4bf' : 'transparent'}`,
+            }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ padding: '16px 16px 80px' }}>
+
+        {/* ── Overview Section ── */}
+        {activeSection === 'overview' && (
+          <>
+            {/* Stats card */}
+            <div style={{
+              background: '#1a2458', borderRadius: 16, padding: '16px',
+              display: 'flex', gap: 0, marginBottom: 16,
+            }}>
+              <div style={{ flex: 1, textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#2dd4bf' }}>{totalOpinions}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>전체 의견</div>
+              </div>
+              <div style={{ flex: 1, textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#fbbf24' }}>{totalVotes}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>투표</div>
+              </div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#34d399' }}>{confirmedCount}/12</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>발표 준비</div>
+              </div>
+            </div>
+
+            {/* Policy filter chips */}
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8, marginBottom: 16 }}>
+              <button onClick={() => setSelectedPolicy('all')} style={{
+                flexShrink: 0, padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                border: 'none', cursor: 'pointer',
+                background: selectedPolicy === 'all' ? '#1a2458' : '#f1f5f9',
+                color: selectedPolicy === 'all' ? 'white' : '#475569',
+              }}>전체</button>
+              {agendas.map(a => {
+                const num = a.agendaId.replace('policy-', '')
+                const sel = selectedPolicy === a.agendaId
+                return (
+                  <button key={a.agendaId} onClick={() => setSelectedPolicy(a.agendaId)} style={{
+                    flexShrink: 0, padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+                    border: 'none', cursor: 'pointer',
+                    background: sel ? '#2dd4bf' : '#f1f5f9',
+                    color: sel ? '#1a2458' : '#475569',
+                  }}>{num}번</button>
+                )
+              })}
+            </div>
+
+            {/* 테이블별 의견 수 */}
+            <div style={{ background: 'white', borderRadius: 16, padding: '16px', marginBottom: 12 }}>
+              <h2 style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 900, color: '#1e293b' }}>테이블별 의견 수</h2>
+              {agendas.map(a => {
+                const num = a.agendaId.replace('policy-', '')
+                const cnt = opCountMap[a.agendaId] || 0
+                return (
+                  <HBar
+                    key={a.agendaId}
+                    label={`${num}. ${a.title.slice(0, 16)}${a.title.length > 16 ? '…' : ''}`}
+                    value={cnt}
+                    max={maxOpCount}
+                    color="#2dd4bf"
+                    sub={`${cnt}건`}
+                  />
+                )
+              })}
+            </div>
+
+            {/* 우선순위 투표 */}
+            <div style={{ background: 'white', borderRadius: 16, padding: '16px', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <h2 style={{ margin: 0, fontSize: 14, fontWeight: 900, color: '#1e293b' }}>우선순위 투표 (마을이)</h2>
+                <button onClick={() => setShowVoteInput(true)} style={{
+                  background: 'transparent', border: '1px solid #e2e8f0',
+                  color: '#f97316', fontWeight: 700, fontSize: 12, padding: '4px 10px',
+                  borderRadius: 8, cursor: 'pointer',
+                }}>결과 입력</button>
+              </div>
+              {agendas.map(a => {
+                const num = a.agendaId.replace('policy-', '')
+                const v = votes[a.agendaId] || 0
+                return (
+                  <HBar
+                    key={a.agendaId}
+                    label={`${num}. ${a.title.slice(0, 16)}${a.title.length > 16 ? '…' : ''}`}
+                    value={v}
+                    max={maxVote}
+                    color="#f97316"
+                    sub={`${v}표`}
+                  />
+                )
+              })}
+            </div>
+
+            {/* 키워드 버블 클라우드 */}
+            <div style={{ background: 'white', borderRadius: 16, padding: '16px', marginBottom: 12 }}>
+              <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 900, color: '#1e293b' }}>키워드 버블 클라우드</h2>
+              <KeywordCloud opinions={opinions} selectedPolicy={selectedPolicy} />
+            </div>
+
+            {/* 실시간 의견 피드 */}
+            <div style={{ background: 'white', borderRadius: 16, padding: '16px' }}>
+              <h2 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 900, color: '#1e293b' }}>
+                실시간 의견 피드
+                <span style={{ marginLeft: 8, fontSize: 12, color: '#94a3b8', fontWeight: 400 }}>
+                  {selectedPolicy === 'all' ? `전체 ${opinions.length}건` : `${opCountMap[selectedPolicy] || 0}건`}
+                </span>
+              </h2>
+              <OpinionFeed opinions={opinions} selectedPolicy={selectedPolicy} />
+            </div>
+          </>
         )}
 
-        {/* 📄 자료 만들기 탭 */}
-        {activeTab === 'materials' && (
-          <div className="flex flex-col gap-4">
-            <h2 className="font-bold text-navy-700 text-lg">최종 자료 만들기</h2>
-            <p className="text-gray-500 text-sm -mt-2">최종 논의 내용을 바탕으로 순서대로 진행하세요.</p>
+        {/* ── Slides Section ── */}
+        {activeSection === 'slides' && (
+          <div>
+            <h2 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 900, color: '#1e293b' }}>테이블별 발표 슬라이드</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {agendas.map(agenda => {
+                const sess = getSession(agenda.agendaId)
+                const slides: SlideData = (sess as any)?.slides ?? EMPTY_SLIDES
+                const num = agenda.agendaId.replace('policy-', '')
+                const hasSlides = !!(sess as any)?.slides
 
-            {/* 1단계 */}
-            <div className="card border-2 border-teal-200">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-full bg-teal-500 text-white font-black text-sm flex items-center justify-center shrink-0">1</div>
-                <h3 className="font-bold text-navy-800 text-base">발표용 슬라이드 제작</h3>
-              </div>
-              <p className="text-gray-500 text-sm mb-2 leading-relaxed">
-                정책 제안안을 입력하면 5장 슬라이드를 만들어 드립니다.
-              </p>
-              {/* GPT 바로가기 */}
-              <a
-                href="https://chatgpt.com/g/g-6a286481dfe881919b3c851a50f931eb-maeuljaci-jeongcaeg-seulraideu-meikeo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl px-4 py-3 mb-2 transition-colors"
-              >
-                <span className="text-lg">🤖</span>
-                <span className="font-bold text-sm flex-1">ChatGPT GPT로 이미지 만들기</span>
-                <span className="text-xs text-teal-200">추천 ↗</span>
-              </a>
-              <Link to="/slide-deck" className="btn-secondary text-center block text-sm py-2.5">
-                🖼️ 구성안 생성 + API 자동 제작
-              </Link>
+                return (
+                  <div key={agenda.agendaId} style={{
+                    background: 'white', borderRadius: 14, padding: '12px',
+                    border: '1px solid #f1f5f9', boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+                  }}>
+                    <p style={{ fontSize: 10, color: '#94a3b8', margin: '0 0 3px' }}>{num}번</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#1e293b', margin: '0 0 8px', lineHeight: 1.3,
+                      display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {agenda.title}
+                    </p>
+                    <SlideGridThumb
+                      slides={slides}
+                      policyNum={num}
+                      onClick={hasSlides ? () => setPresentingSlides({ slides, policyNum: num }) : undefined}
+                    />
+                    {hasSlides ? (
+                      <button
+                        onClick={() => setPresentingSlides({ slides, policyNum: num })}
+                        style={{
+                          marginTop: 8, width: '100%', background: '#1a2458', color: 'white',
+                          border: 'none', borderRadius: 8, padding: '7px 0', fontSize: 11,
+                          fontWeight: 700, cursor: 'pointer',
+                        }}
+                      >🖥️ 발표 모드</button>
+                    ) : (
+                      <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', margin: '8px 0 0', padding: '6px 0' }}>슬라이드 미저장</p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
+          </div>
+        )}
 
-            {/* 2단계 */}
-            <div className="card border-2 border-navy-100">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-full bg-navy-700 text-white font-black text-sm flex items-center justify-center shrink-0">2</div>
-                <h3 className="font-bold text-navy-800 text-base">최종 정책 제안 만들기</h3>
-              </div>
-              <p className="text-gray-500 text-sm mb-3 leading-relaxed">
-                숙의 결과를 붙여넣으면 정책 제안안 형식으로 정리해 드립니다.
-              </p>
-              <Link to="/policy-proposal" className="btn-primary text-center block">
-                📄 정책 제안안 만들기
-              </Link>
-            </div>
-
-            {/* 3단계 */}
-            <div className="card border-2 border-navy-100">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 rounded-full bg-navy-600 text-white font-black text-sm flex items-center justify-center shrink-0">3</div>
-                <h3 className="font-bold text-navy-800 text-base">발표문 만들기</h3>
-              </div>
-              <p className="text-gray-500 text-sm mb-3 leading-relaxed">
-                정책 제안안을 주민총회 발표문으로 변환합니다.
-              </p>
-              <Link to="/presentation" className="btn-secondary text-center block">
-                🎤 발표문 만들기
-              </Link>
+        {/* ── Manage Section ── */}
+        {activeSection === 'manage' && (
+          <div>
+            <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 900, color: '#1e293b' }}>12개 정책 진행 현황</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {agendas.map(agenda => {
+                const sess = getSession(agenda.agendaId)
+                const num = agenda.agendaId.replace('policy-', '')
+                const opCount = opCountMap[agenda.agendaId] || 0
+                return (
+                  <Link
+                    key={agenda.agendaId}
+                    to={`/operator/${agenda.agendaId}`}
+                    style={{
+                      background: 'white', borderRadius: 14, padding: '12px 14px',
+                      border: '1px solid #f1f5f9', textDecoration: 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    }}
+                  >
+                    <div>
+                      <span style={{ fontSize: 10, color: '#94a3b8' }}>{num}번 정책</span>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#1e293b', margin: '2px 0' }}>{agenda.title}</p>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <span style={{ fontSize: 10, background: opCount > 0 ? '#e0f2fe' : '#f1f5f9', color: opCount > 0 ? '#0369a1' : '#94a3b8', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>
+                          의견 {opCount}
+                        </span>
+                        {sess?.is_confirmed && (
+                          <span style={{ fontSize: 10, background: '#d1fae5', color: '#065f46', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>완료</span>
+                        )}
+                        {(sess as any)?.slides && (
+                          <span style={{ fontSize: 10, background: '#ede9fe', color: '#6d28d9', padding: '2px 7px', borderRadius: 20, fontWeight: 600 }}>슬라이드 ✅</span>
+                        )}
+                      </div>
+                    </div>
+                    <span style={{ color: '#94a3b8', fontSize: 16 }}>→</span>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         )}
       </div>
+
+      {/* ── Modals ── */}
+      {showTimer && <TimerModal onClose={() => setShowTimer(false)} />}
+      {showVoteInput && (
+        <VoteInputModal votes={votes} onSave={saveVotes} onClose={() => setShowVoteInput(false)} />
+      )}
+      {presentingSlides && (
+        <PresentationMode
+          slides={presentingSlides.slides}
+          policyNum={presentingSlides.policyNum}
+          onClose={() => setPresentingSlides(null)}
+        />
+      )}
     </div>
   )
 }

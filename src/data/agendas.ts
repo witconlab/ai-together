@@ -13,6 +13,8 @@ export const agendas: Agenda[] = [
     expectedEffect: '주민 대표성 있는 읍면동장 선출로 지역 밀착형 행정 실현, 중장기 계획 수립 역량 강화, 주민자치 활성화, 행정-주민 간 신뢰 회복. ※ 국정과제 52번 주민 삶의 질 향상을 위한 자치분권 역량제고(행안부/2025.8.17)',
     chatbotGuide: '읍면동장 주민 선출제 및 전문직위제 도입과 관련된 제안 배경, 기대효과, 쟁점을 자료 기반으로 안내합니다.',
     googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/757784b1-ca60-4b1c-a939-50e037105002',
     fileSearchStoreName: 'policy-01-store',
     referenceUrls: [
       'https://www.mois.go.kr/frt/sub/a06/b06/selfGovt/screen.do',
@@ -29,6 +31,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-02',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/ecc42848-cb6d-4aa3-b7b5-4d3bff5fe935',
     title: '마을공동체·주민자치 재정 자립기반 마련',
     description: '주민세 환원, 시민참여예산, 공동체기금 등을 연계한 지속가능한 마을자치 재정구조를 구축합니다.',
     category: '재정·자립',
@@ -55,6 +59,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-03',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/10bd607d-b6e8-402c-b5d3-3e1d489da573',
     title: '지속가능한 통합형 마을자치 종합체계 마련',
     description: '전남·광주 행정통합에 맞춰 도시형·농촌형·도농복합형 마을자치 체계를 통합적으로 구축합니다.',
     category: '통합체계',
@@ -91,6 +97,8 @@ export const agendas: Agenda[] = [
     expectedEffect: '주민자치회 법적 근거 강화, 마을공동체 정책 통합 조례 제도화, 시민 주도 입법 문화 형성, 통합시 출범과 동시에 작동하는 자치 제도 기반 마련',
     chatbotGuide: '통합 조례 마련, 주민자치회 조례, 마을공동체 기본법과 관련된 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/afaa674b-4860-4ede-938f-d496f0871918',
     fileSearchStoreName: 'policy-04-store',
     referenceUrls: [
       'https://www.law.go.kr/lsSc.do?query=%EC%A3%BC%EB%AF%BC%EC%9E%90%EC%B9%98%ED%9A%8C',
@@ -107,6 +115,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-05',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/97e5f7b1-d303-4817-b9b1-88a8f5dd2151',
     title: '자치를 연결하는 창의적 공유공간 활용방안',
     description: '마을회관, SOC, 유휴공간 등을 주민 삶과 연결된 창의적 공유지대와 공동체 거점공간으로 활용합니다.',
     category: '공간·커뮤니티',
@@ -143,6 +153,8 @@ export const agendas: Agenda[] = [
     expectedEffect: '중복·분산된 지원 기능 통합, 현장 접근성 강화, 전문성 있는 통합 지원 제공, 행정-현장-주민 간 연결 강화',
     chatbotGuide: '전남·광주 통합지원기관의 역할, 기능, 조직 구성에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/11db5715-c275-4cf4-9e55-0294161d1d42',
     fileSearchStoreName: 'policy-06-store',
     referenceUrls: [
       'https://www.k-village.or.kr',
@@ -159,6 +171,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-07',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/fcdf5341-5cfd-4f2a-a97b-34136bea01f9',
     title: '주민자치회 성장단계별 지원체계 마련',
     description: '주민자치회의 역량과 성장 단계에 따른 맞춤형 지원 제도와 운영 매뉴얼을 구축합니다.',
     category: '주민자치회',
@@ -185,6 +199,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-08',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/13b47372-4aee-4e27-a29b-2b81c43ccf1d',
     title: '주민자치회 대표성 강화를 위한 시범사업 실시',
     description: '도시형·농촌형·도농복합형·원도심형 등 유형별 시범사업으로 주민자치회의 민주성과 대표성을 강화합니다.',
     category: '주민자치회',
@@ -211,6 +227,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-09',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/249587fc-87c3-4027-8182-47137d0dcce4',
     title: '마을자치 한마당 확대 및 전국주민자치박람회 유치',
     description: '전남·광주 통합 마을자치 한마당 개최와 전국주민자치박람회 유치로 전국 주민자치의 허브가 됩니다.',
     category: '네트워크·축제',
@@ -237,6 +255,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-10',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/f570c074-fb52-4682-a8c6-9560dcf65bac',
     title: 'k시민주권 사관학교(자격증제 도입) 및 네트워크 구축',
     description: '주민리더·마을활동가·간사·공무원을 위한 시민주권 사관학교와 자격증제를 도입하여 전문성을 강화합니다.',
     category: '교육·역량강화',
@@ -263,6 +283,8 @@ export const agendas: Agenda[] = [
   },
   {
     agendaId: 'policy-11',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/3a304714-5432-4e3e-96f4-58d162bf1e87',
     title: '도시·농촌 상생형 생활권 공동체 모델 구축',
     description: '도농 교류, 마을교육공동체, 생활 밀착형 돌봄 체계를 연계하여 광역 생활공동체 모델을 구축합니다.',
     category: '공동체·돌봄',
@@ -299,6 +321,8 @@ export const agendas: Agenda[] = [
     expectedEffect: '마을활동가 사회적 지위 향상, 활동수당·교육비 지원으로 안정적 활동 기반 마련, 경력인증제를 통한 전문성 인정, 활동가 소진 예방으로 지속가능한 마을활동 생태계 구축',
     chatbotGuide: '마을활동 가치 재정립, 인정보상체계, 경력인증제, 소진예방에 관한 자료 기반 안내를 제공합니다.',
     googleFormUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSepIYajJuMZTHq3CMAi8k--SuHAGh_IhBuaDwqcDCkj-s1JJw/viewform?usp=header',
+    driveUrl: 'https://drive.google.com/drive/folders/1PSVibnoIDyXBn499KNvpaRYj4T3pURjB?usp=drive_link',
+    notebookLmUrl: 'https://notebooklm.google.com/notebook/64291f40-e9da-45aa-aa7f-f698ce1c8d60',
     fileSearchStoreName: 'policy-12-store',
     referenceUrls: [
       'https://www.k-village.or.kr',

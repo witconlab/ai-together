@@ -84,13 +84,26 @@ export default function ChatPage() {
             </span>
             <h1 className="font-bold text-navy-800 text-sm leading-tight truncate">{agenda.title}</h1>
           </div>
-          <button
-            onClick={() => setShowQuestions((v) => !v)}
-            className="shrink-0 ml-2 text-xs font-medium px-3 py-1.5 rounded-full min-h-0 border transition-colors
-              bg-navy-50 border-navy-200 text-navy-600 hover:bg-navy-100"
-          >
-            {showQuestions ? '질문 닫기 ✕' : '💡 예시 질문'}
-          </button>
+          <div className="flex items-center gap-2 shrink-0 ml-2">
+            {agenda.notebookLmUrl && (
+              <a
+                href={agenda.notebookLmUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors
+                  bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+              >
+                🎧 NotebookLM
+              </a>
+            )}
+            <button
+              onClick={() => setShowQuestions((v) => !v)}
+              className="text-xs font-medium px-3 py-1.5 rounded-full min-h-0 border transition-colors
+                bg-navy-50 border-navy-200 text-navy-600 hover:bg-navy-100"
+            >
+              {showQuestions ? '질문 닫기 ✕' : '💡 예시 질문'}
+            </button>
+          </div>
         </div>
         <p className="text-gray-400 text-xs mt-0.5">정책 매니저 챗봇</p>
       </div>
