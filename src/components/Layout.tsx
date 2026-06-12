@@ -41,8 +41,9 @@ export default function Layout({ children }: Props) {
       )}
       <main className="flex-1">{children}</main>
       {!isLanding && (
-        <footer className="bg-navy-900 text-white/40 text-xs text-center py-3 px-4">
-          AI 투게더 정책 공론장 운영센터
+        <footer className="bg-navy-900 text-white/40 text-xs py-3 px-4 flex items-center justify-between">
+          <span>AI 투게더 정책 공론장 운영센터</span>
+          <span>@위트콘텐츠연구소</span>
         </footer>
       )}
     </div>
