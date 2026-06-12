@@ -70,7 +70,18 @@ export default function AgendaDetail() {
 
         {agenda.notebookLmUrl && (
           <button
-            onClick={() => setChatOpen(true)}
+            onClick={() => {
+              const w = Math.min(window.screen.width, 480)
+              const h = Math.min(window.screen.height, 800)
+              const left = window.screen.width - w
+              const top = 0
+              const popup = window.open(
+                agenda.notebookLmUrl,
+                'chatbot',
+                `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`
+              )
+              if (!popup) setChatOpen(true) // 팝업 차단 시 모달로 fallback
+            }}
             className="btn-primary text-center text-xl py-4 w-full"
           >
             🤖 AI 정책매니저 챗봇
