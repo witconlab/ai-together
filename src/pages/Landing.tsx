@@ -11,9 +11,7 @@ export default function Landing() {
   const navigate = useNavigate()
   const { role, setRole, setPolicyId } = useRole()
 
-  const [opStep, setOpStep] = useState<OpStep | null>(() =>
-    role === 'admin' ? 'menu' : null
-  )
+  const [opStep, setOpStep] = useState<OpStep | null>(null)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
