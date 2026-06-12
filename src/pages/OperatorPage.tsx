@@ -63,10 +63,17 @@ export default function OperatorPage() {
       img.src = URL.createObjectURL(file)
     })
 
+  const upsertSession = async (data: Record<string, unknown>) => {
+    const { error } = await supabase
+      .from('table_sessions')
+      .upsert({ policy_id: agendaId, ...data }, { onConflict: 'policy_id' })
+    if (error) throw new Error(error.message)
+  }
+
   const handlePhotoRemove = async (idx: number) => {
     const newPhotos = photos.filter((_, i) => i !== idx)
     setPhotos(newPhotos)
-    await supabase.from('table_sessions').update({ photos: newPhotos }).eq('policy_id', agendaId)
+    await upsertSession({ photos: newPhotos })
   }
 
   /* AI 초안 생성 → DB 저장 후 슬라이드 에디터로 이동 */
@@ -107,8 +114,7 @@ export default function OperatorPage() {
         }
       })
 
-      await supabase.from('table_sessions').upsert({
-        policy_id: agendaId,
+      await upsertSession({
         table_intro: tableIntro,
         tiro_url: tiroUrl || null,
         tiro_summary: tiroSummary || null,
@@ -116,8 +122,9 @@ export default function OperatorPage() {
       })
 
       navigate(`/slide-editor/${agendaId}`)
-    } catch {
-      alert('AI 초안 생성 실패. 에디터에서 직접 작성하세요.')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      alert(`저장 실패: ${msg}\n\nSupabase에 html_slides 컬럼이 없을 수 있습니다.\nALTER TABLE table_sessions ADD COLUMN IF NOT EXISTS html_slides JSONB;`)
       navigate(`/slide-editor/${agendaId}`)
     } finally {
       setGenerating(false)
@@ -127,15 +134,16 @@ export default function OperatorPage() {
   const handleSaveInfo = async () => {
     setSaving(true)
     try {
-      await supabase.from('table_sessions').upsert({
-        policy_id: agendaId,
+      await upsertSession({
         table_intro: tableIntro,
         tiro_url: tiroUrl || null,
         tiro_summary: tiroSummary || null,
       })
       alert('저장되었습니다.')
-    } catch { alert('저장 실패') }
-    finally { setSaving(false) }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      alert(`저장 실패: ${msg}`)
+    } finally { setSaving(false) }
   }
 
   if (!agenda) return <div className="p-8 text-center text-gray-500">정책을 찾을 수 없습니다.</div>
@@ -194,7 +202,7 @@ export default function OperatorPage() {
               const newDataUrls = await Promise.all(toAdd.map(compressToBase64))
               const newPhotos = [...photos, ...newDataUrls]
               setPhotos(newPhotos)
-              await supabase.from('table_sessions').upsert({ policy_id: agendaId, photos: newPhotos })
+              await upsertSession({ photos: newPhotos })
             } catch { alert('사진 처리에 실패했습니다.') }
             finally { setUploading(false) }
           }} />
